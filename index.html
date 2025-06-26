@@ -1642,7 +1642,7 @@
          */
         function switchTab(topic) {
             // Update active tab styling
-           document.querySelectorAll('.tab-button').forEach(button => {
+            document.querySelectorAll('.tab-button').forEach(button => {
                 button.classList.remove('active');
             });
             const activeTabButton = document.querySelector(`.tab-button[data-topic="${topic}"]`);
@@ -1653,19 +1653,18 @@
             state.activeTab = topic;
             state.filteredQuestions = quizData.filter(q => q.topic === topic);
             shuffleArray(state.filteredQuestions);
-            shuffleChoicesInQuestions(state.filteredQuestions);
-
-            state.activeTab = topic;
-            state.filteredQuestions = quizData.filter(q => q.topic === topic);
+            shuffleChoicesInQuestions(state.filteredQuestions); // Shuffle choices while preserving correct answer
+        
             state.currentQuestionIndex = 0;
             state.score = 0;
             state.answerLocked = false;
             nextButton.disabled = true; // Disable next button on tab switch
-
+        
             renderQuestion();
             updateScoreDisplay();
             updateProgressBar();
         }
+
 
         function shuffleChoicesInQuestions(questions) {
             questions.forEach(q => {
