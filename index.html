@@ -1642,13 +1642,18 @@
          */
         function switchTab(topic) {
             // Update active tab styling
-            document.querySelectorAll('.tab-button').forEach(button => {
+           document.querySelectorAll('.tab-button').forEach(button => {
                 button.classList.remove('active');
             });
             const activeTabButton = document.querySelector(`.tab-button[data-topic="${topic}"]`);
             if (activeTabButton) {
                 activeTabButton.classList.add('active');
             }
+        
+            state.activeTab = topic;
+            state.filteredQuestions = quizData.filter(q => q.topic === topic);
+            shuffleArray(state.filteredQuestions);
+            shuffleChoicesInQuestions(state.filteredQuestions);
 
             state.activeTab = topic;
             state.filteredQuestions = quizData.filter(q => q.topic === topic);
@@ -1661,6 +1666,17 @@
             updateScoreDisplay();
             updateProgressBar();
         }
+
+        function shuffleChoicesInQuestions(questions) {
+            questions.forEach(q => {
+                if (q.type !== 'tf') { // Don't shuffle True/False
+                    const correctAnswerText = q.options[q.correctAnswer];
+                    shuffleArray(q.options);
+                    q.correctAnswer = q.options.indexOf(correctAnswerText); // Update index
+                }
+            });
+        }
+
 
         /**
          * Renders the current question and its options to the DOM.
@@ -1807,6 +1823,14 @@
             // Ensure next button is disabled until an answer is picked
             nextButton.disabled = true;
         }
+
+        function shuffleArray(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+        }
+
 
         // Initialize the app when the DOM is fully loaded
         document.addEventListener('DOMContentLoaded', initializeApp);
