@@ -162,309 +162,306 @@
     <script>
         // ===== QUIZ DATA - PASTE YOUR QUESTIONS HERE =====
         const quizData = [
-            [
     {
-        "question": "Which best describes a control system?",
-        "options": ["A system that ignores disturbances", "A mechanism to regulate processes to achieve desired outputs", "A random collection of sensors", "A timer-based machine"],
-        "correct": 1,
-        "explanation": "Control systems regulate processes so outputs meet desired objectives."
+        question: "Which best describes a control system?",
+        options: ["A system that ignores disturbances", "A mechanism to regulate processes to achieve desired outputs", "A random collection of sensors", "A timer-based machine"],
+        correct: 1,
+        explanation: "Control systems regulate processes so outputs meet desired objectives."
     },
     {
-        "question": "Why are control systems important in industry?",
-        "options": ["They replace all human workers", "They ensure safety, quality, and efficiency", "They slow down processes", "They only apply to robotics"],
-        "correct": 1,
-        "explanation": "Control systems guarantee consistent quality and safe operation."
+        question: "Why are control systems important in industry?",
+        options: ["They replace all human workers", "They ensure safety, quality, and efficiency", "They slow down processes", "They only apply to robotics"],
+        correct: 1,
+        explanation: "Control systems guarantee consistent quality and safe operation."
     },
     {
-        "question": "Which of the following is not a common application of control systems?",
-        "options": ["Power systems", "Inventory management", "Temperature regulation", "Freehand painting"],
-        "correct": 3,
-        "explanation": "Painting is not controlled by measurable system feedback."
+        question: "Which of the following is not a common application of control systems?",
+        options: ["Power systems", "Inventory management", "Temperature regulation", "Freehand painting"],
+        correct: 3,
+        explanation: "Painting is not controlled by measurable system feedback."
     },
     {
-        "question": "A physical system is defined as:",
-        "options": ["Only electrical devices", "Any engineering system governed by physics", "Only mechanical systems", "A computer simulation"],
-        "correct": 1,
-        "explanation": "Physical systems obey physical laws (mechanical, electrical, thermal, etc.)."
+        question: "A physical system is defined as:",
+        options: ["Only electrical devices", "Any engineering system governed by physics", "Only mechanical systems", "A computer simulation"],
+        correct: 1,
+        explanation: "Physical systems obey physical laws (mechanical, electrical, thermal, etc.)."
     },
     {
-        "question": "The 'plant' in a control system refers to:",
-        "options": ["A living organism", "The controlled process", "The controller", "A disturbance"],
-        "correct": 1,
-        "explanation": "The plant is the object to be controlled."
+        question: "The 'plant' in a control system refers to:",
+        options: ["A living organism", "The controlled process", "The controller", "A disturbance"],
+        correct: 1,
+        explanation: "The plant is the object to be controlled."
     },
     {
-        "question": "The main function of a controller is:",
-        "options": ["Generate disturbances", "Compare input and output to decide action", "Provide physical torque", "Measure output directly"],
-        "correct": 1,
-        "explanation": "Controllers decide the necessary action to reduce error."
+        question: "The main function of a controller is:",
+        options: ["Generate disturbances", "Compare input and output to decide action", "Provide physical torque", "Measure output directly"],
+        correct: 1,
+        explanation: "Controllers decide the necessary action to reduce error."
     },
     {
-        "question": "The actuator is often called the:",
-        "options": ["Brain", "Muscle", "Eye", "Noise"],
-        "correct": 1,
-        "explanation": "Actuators physically act on the process."
+        question: "The actuator is often called the:",
+        options: ["Brain", "Muscle", "Eye", "Noise"],
+        correct: 1,
+        explanation: "Actuators physically act on the process."
     },
     {
-        "question": "The sensor in a control system is:",
-        "options": ["A device measuring controlled variables", "A device amplifying signals", "An error generator", "A disturbance source"],
-        "correct": 0,
-        "explanation": "Sensors provide measurement for feedback."
+        question: "The sensor in a control system is:",
+        options: ["A device measuring controlled variables", "A device amplifying signals", "An error generator", "A disturbance source"],
+        correct: 0,
+        explanation: "Sensors provide measurement for feedback."
     },
     {
-        "question": "The reference input (setpoint) is:",
-        "options": ["Always zero", "The desired system output", "The actuator torque", "A disturbance input"],
-        "correct": 1,
-        "explanation": "The setpoint defines the target performance."
+        question: "The reference input (setpoint) is:",
+        options: ["Always zero", "The desired system output", "The actuator torque", "A disturbance input"],
+        correct: 1,
+        explanation: "The setpoint defines the target performance."
     },
     {
-        "question": "The error signal is:",
-        "options": ["Output minus disturbance", "Difference between setpoint and feedback", "Plant output itself", "Control signal"],
-        "correct": 1,
-        "explanation": "Error = Setpoint – Actual Output."
+        question: "The error signal is:",
+        options: ["Output minus disturbance", "Difference between setpoint and feedback", "Plant output itself", "Control signal"],
+        correct: 1,
+        explanation: "Error = Setpoint – Actual Output."
     },
     {
-        "question": "The manipulated variable refers to:",
-        "options": ["The disturbance", "The controlled variable", "The input adjusted to affect the plant", "Always pressure"],
-        "correct": 2,
-        "explanation": "Manipulated variables are inputs used to control the system."
+        question: "The manipulated variable refers to:",
+        options: ["The disturbance", "The controlled variable", "The input adjusted to affect the plant", "Always pressure"],
+        correct: 2,
+        explanation: "Manipulated variables are inputs used to control the system."
     },
     {
-        "question": "The controlled variable is:",
-        "options": ["Desired reference value", "The actual measured output", "The error signal", "Always temperature"],
-        "correct": 1,
-        "explanation": "It is the real outcome we want to control."
+        question: "The controlled variable is:",
+        options: ["Desired reference value", "The actual measured output", "The error signal", "Always temperature"],
+        correct: 1,
+        explanation: "It is the real outcome we want to control."
     },
     {
-        "question": "Disturbance inputs are:",
-        "options": ["Always controllable", "Unpredictable external influences", "Signals from sensors", "Part of the controller"],
-        "correct": 1,
-        "explanation": "Disturbances are outside influences that affect system performance."
+        question: "Disturbance inputs are:",
+        options: ["Always controllable", "Unpredictable external influences", "Signals from sensors", "Part of the controller"],
+        correct: 1,
+        explanation: "Disturbances are outside influences that affect system performance."
     },
     {
-        "question": "Which component compares setpoint with feedback?",
-        "options": ["Actuator", "Error detector", "Sensor", "Plant"],
-        "correct": 1,
-        "explanation": "The error detector computes difference between desired and actual output."
+        question: "Which component compares setpoint with feedback?",
+        options: ["Actuator", "Error detector", "Sensor", "Plant"],
+        correct: 1,
+        explanation: "The error detector computes difference between desired and actual output."
     },
     {
-        "question": "Which element is considered the 'brain' of the system?",
-        "options": ["Actuator", "Controller", "Plant", "Sensor"],
-        "correct": 1,
-        "explanation": "Controller makes decisions on how to act."
+        question: "Which element is considered the 'brain' of the system?",
+        options: ["Actuator", "Controller", "Plant", "Sensor"],
+        correct: 1,
+        explanation: "Controller makes decisions on how to act."
     },
     {
-        "question": "Which is a characteristic of open-loop systems?",
-        "options": ["Uses feedback for correction", "Simpler and cheaper but less accurate", "Resistant to disturbances", "Always stable"],
-        "correct": 1,
-        "explanation": "Open-loop systems are simple but lack correction ability."
+        question: "Which is a characteristic of open-loop systems?",
+        options: ["Uses feedback for correction", "Simpler and cheaper but less accurate", "Resistant to disturbances", "Always stable"],
+        correct: 1,
+        explanation: "Open-loop systems are simple but lack correction ability."
     },
     {
-        "question": "Which is the main advantage of closed-loop systems?",
-        "options": ["Low cost", "Ability to self-correct errors", "Simpler structure", "No sensors needed"],
-        "correct": 1,
-        "explanation": "Closed-loop systems automatically adjust for accuracy."
+        question: "Which is the main advantage of closed-loop systems?",
+        options: ["Low cost", "Ability to self-correct errors", "Simpler structure", "No sensors needed"],
+        correct: 1,
+        explanation: "Closed-loop systems automatically adjust for accuracy."
     },
     {
-        "question": "Which is an open-loop system?",
-        "options": ["Thermostat", "Toaster with timer", "Cruise control", "Air conditioner with temperature sensor"],
-        "correct": 1,
-        "explanation": "A toaster operates without feedback."
+        question: "Which is an open-loop system?",
+        options: ["Thermostat", "Toaster with timer", "Cruise control", "Air conditioner with temperature sensor"],
+        correct: 1,
+        explanation: "A toaster operates without feedback."
     },
     {
-        "question": "Which is a closed-loop system?",
-        "options": ["Traffic lights with fixed time", "Thermostat heating system", "Microwave with timer", "Basic washing machine cycle"],
-        "correct": 1,
-        "explanation": "Thermostats use feedback to regulate temperature."
+        question: "Which is a closed-loop system?",
+        options: ["Traffic lights with fixed time", "Thermostat heating system", "Microwave with timer", "Basic washing machine cycle"],
+        correct: 1,
+        explanation: "Thermostats use feedback to regulate temperature."
     },
     {
-        "question": "Why are closed-loop systems preferred in safety-critical industries?",
-        "options": ["They are cheaper", "They ignore disturbances", "They maintain stability and accuracy", "They don’t need sensors"],
-        "correct": 2,
-        "explanation": "Closed-loop systems ensure reliability under disturbances."
+        question: "Why are closed-loop systems preferred in safety-critical industries?",
+        options: ["They are cheaper", "They ignore disturbances", "They maintain stability and accuracy", "They don’t need sensors"],
+        correct: 2,
+        explanation: "Closed-loop systems ensure reliability under disturbances."
     },
     {
-        "question": "Negative feedback is used because it:",
-        "options": ["Stabilizes system and reduces error", "Always increases output", "Creates oscillations", "Eliminates sensors"],
-        "correct": 0,
-        "explanation": "Negative feedback ensures stability."
+        question: "Negative feedback is used because it:",
+        options: ["Stabilizes system and reduces error", "Always increases output", "Creates oscillations", "Eliminates sensors"],
+        correct: 0,
+        explanation: "Negative feedback ensures stability."
     },
     {
-        "question": "Positive feedback generally:",
-        "options": ["Reduces error", "Amplifies deviations", "Prevents oscillation", "Always improves accuracy"],
-        "correct": 1,
-        "explanation": "Positive feedback can make systems unstable."
+        question: "Positive feedback generally:",
+        options: ["Reduces error", "Amplifies deviations", "Prevents oscillation", "Always improves accuracy"],
+        correct: 1,
+        explanation: "Positive feedback can make systems unstable."
     },
     {
-        "question": "Which is the most commonly used feedback in engineering?",
-        "options": ["Positive", "Negative", "Random", "Open"],
-        "correct": 1,
-        "explanation": "Negative feedback dominates due to its stabilizing nature."
+        question: "Which is the most commonly used feedback in engineering?",
+        options: ["Positive", "Negative", "Random", "Open"],
+        correct: 1,
+        explanation: "Negative feedback dominates due to its stabilizing nature."
     },
     {
-        "question": "The process of feeding back output into input is called:",
-        "options": ["Compensation", "Feedback", "Error detection", "Disturbance input"],
-        "correct": 1,
-        "explanation": "Feedback is returning output to regulate input."
+        question: "The process of feeding back output into input is called:",
+        options: ["Compensation", "Feedback", "Error detection", "Disturbance input"],
+        correct: 1,
+        explanation: "Feedback is returning output to regulate input."
     },
     {
-        "question": "In a thermostat, when the room reaches setpoint temperature:",
-        "options": ["Error becomes zero", "Heater stays on", "Error signal increases", "Feedback stops working"],
-        "correct": 0,
-        "explanation": "At setpoint, error = 0."
+        question: "In a thermostat, when the room reaches setpoint temperature:",
+        options: ["Error becomes zero", "Heater stays on", "Error signal increases", "Feedback stops working"],
+        correct: 0,
+        explanation: "At setpoint, error = 0."
     },
     {
-        "question": "Control methods before 1940s were mostly:",
-        "options": ["Theoretical", "Intuitive and experimental", "Fully computerized", "Sensor-driven"],
-        "correct": 1,
-        "explanation": "Early methods were trial-and-error based."
+        question: "Control methods before 1940s were mostly:",
+        options: ["Theoretical", "Intuitive and experimental", "Fully computerized", "Sensor-driven"],
+        correct: 1,
+        explanation: "Early methods were trial-and-error based."
     },
     {
-        "question": "World War II contributed to control theory by:",
-        "options": ["Ignoring it", "Driving scientific approaches for military needs", "Eliminating servomechanisms", "Replacing feedback with open-loop"],
-        "correct": 1,
-        "explanation": "WWII demands accelerated scientific control methods."
+        question: "World War II contributed to control theory by:",
+        options: ["Ignoring it", "Driving scientific approaches for military needs", "Eliminating servomechanisms", "Replacing feedback with open-loop"],
+        correct: 1,
+        explanation: "WWII demands accelerated scientific control methods."
     },
     {
-        "question": "Which theory developed in the 1940s–50s?",
-        "options": ["Servomechanism theory", "Open-loop optimization", "Chaos theory", "Social control theory"],
-        "correct": 0,
-        "explanation": "Servomechanism theory evolved for precise motion control."
+        question: "Which theory developed in the 1940s–50s?",
+        options: ["Servomechanism theory", "Open-loop optimization", "Chaos theory", "Social control theory"],
+        correct: 0,
+        explanation: "Servomechanism theory evolved for precise motion control."
     },
     {
-        "question": "Postwar developments led to:",
-        "options": ["Decline of control theory", "Convergence of process control and servo methods", "Replacement by AI", "Elimination of sensors"],
-        "correct": 1,
-        "explanation": "Process and servo control approaches merged."
+        question: "Postwar developments led to:",
+        options: ["Decline of control theory", "Convergence of process control and servo methods", "Replacement by AI", "Elimination of sensors"],
+        correct: 1,
+        explanation: "Process and servo control approaches merged."
     },
     {
-        "question": "Modern control systems are built on contributions from:",
-        "options": ["Random experimentation only", "Early empirical + wartime science + servo theory", "Only computers", "Biological systems"],
-        "correct": 1,
-        "explanation": "Modern control blends all past approaches."
+        question: "Modern control systems are built on contributions from:",
+        options: ["Random experimentation only", "Early empirical + wartime science + servo theory", "Only computers", "Biological systems"],
+        correct: 1,
+        explanation: "Modern control blends all past approaches."
     },
     {
-        "question": "High controller gain often leads to:",
-        "options": ["Slower response", "Faster response with oscillations", "No effect", "Stable but delayed system"],
-        "correct": 1,
-        "explanation": "High gain increases speed but risks oscillation."
+        question: "High controller gain often leads to:",
+        options: ["Slower response", "Faster response with oscillations", "No effect", "Stable but delayed system"],
+        correct: 1,
+        explanation: "High gain increases speed but risks oscillation."
     },
     {
-        "question": "The main role of the error detector is:",
-        "options": ["Eliminate disturbances", "Compare reference input and feedback", "Act as actuator", "Provide power"],
-        "correct": 1,
-        "explanation": "Error detector computes the error signal."
+        question: "The main role of the error detector is:",
+        options: ["Eliminate disturbances", "Compare reference input and feedback", "Act as actuator", "Provide power"],
+        correct: 1,
+        explanation: "Error detector computes the error signal."
     },
     {
-        "question": "The control signal is generated by:",
-        "options": ["Plant", "Controller", "Sensor", "Actuator"],
-        "correct": 1,
-        "explanation": "Controller outputs the control signal to fix errors."
+        question: "The control signal is generated by:",
+        options: ["Plant", "Controller", "Sensor", "Actuator"],
+        correct: 1,
+        explanation: "Controller outputs the control signal to fix errors."
     },
     {
-        "question": "The actuator is considered the system’s:",
-        "options": ["Brain", "Muscle", "Sensor", "Feedback"],
-        "correct": 1,
-        "explanation": "Actuators physically act on processes."
+        question: "The actuator is considered the system’s:",
+        options: ["Brain", "Muscle", "Sensor", "Feedback"],
+        correct: 1,
+        explanation: "Actuators physically act on processes."
     },
     {
-        "question": "Which variable directly influences the plant?",
-        "options": ["Disturbance", "Manipulated variable", "Reference signal", "Error signal"],
-        "correct": 1,
-        "explanation": "Manipulated variable is the input to plant."
+        question: "Which variable directly influences the plant?",
+        options: ["Disturbance", "Manipulated variable", "Reference signal", "Error signal"],
+        correct: 1,
+        explanation: "Manipulated variable is the input to plant."
     },
     {
-        "question": "In temperature control, if room temp > setpoint, the system:",
-        "options": ["Heats more", "Cools or reduces heating", "Stops feedback", "Ignores error"],
-        "correct": 1,
-        "explanation": "System corrects by cooling or reducing heating."
+        question: "In temperature control, if room temp > setpoint, the system:",
+        options: ["Heats more", "Cools or reduces heating", "Stops feedback", "Ignores error"],
+        correct: 1,
+        explanation: "System corrects by cooling or reducing heating."
     },
     {
-        "question": "A thermostat is an example of:",
-        "options": ["Open-loop system", "Closed-loop negative feedback system", "Positive feedback system", "Purely manual system"],
-        "correct": 1,
-        "explanation": "Thermostat uses feedback to maintain temperature."
+        question: "A thermostat is an example of:",
+        options: ["Open-loop system", "Closed-loop negative feedback system", "Positive feedback system", "Purely manual system"],
+        correct: 1,
+        explanation: "Thermostat uses feedback to maintain temperature."
     },
     {
-        "question": "A motor used in a hand dryer system acts as the:",
-        "options": ["Plant", "Actuator", "Sensor", "Controller"],
-        "correct": 1,
-        "explanation": "Motor is actuator providing airflow."
+        question: "A motor used in a hand dryer system acts as the:",
+        options: ["Plant", "Actuator", "Sensor", "Controller"],
+        correct: 1,
+        explanation: "Motor is actuator providing airflow."
     },
     {
-        "question": "In a pump system, water flow is an example of:",
-        "options": ["Controlled variable", "Disturbance", "Setpoint", "Controller output"],
-        "correct": 0,
-        "explanation": "Water flow is the controlled variable being regulated."
+        question: "In a pump system, water flow is an example of:",
+        options: ["Controlled variable", "Disturbance", "Setpoint", "Controller output"],
+        correct: 0,
+        explanation: "Water flow is the controlled variable being regulated."
     },
     {
-        "question": "A dryer drum in laundry machines is primarily the:",
-        "options": ["Plant", "Sensor", "Controller", "Error detector"],
-        "correct": 0,
-        "explanation": "Drum is part of the plant (controlled system)."
+        question: "A dryer drum in laundry machines is primarily the:",
+        options: ["Plant", "Sensor", "Controller", "Error detector"],
+        correct: 0,
+        explanation: "Drum is part of the plant (controlled system)."
     },
     {
-        "question": "Why are variables like temperature, flow, and pressure controlled?",
-        "options": ["For safety, quality, and efficiency", "To waste energy", "To simplify design only", "For aesthetics"],
-        "correct": 0,
-        "explanation": "These variables are vital for stable, safe operations."
+        question: "Why are variables like temperature, flow, and pressure controlled?",
+        options: ["For safety, quality, and efficiency", "To waste energy", "To simplify design only", "For aesthetics"],
+        correct: 0,
+        explanation: "These variables are vital for stable, safe operations."
     },
     {
-        "question": "Which is an example of manipulated variable?",
-        "options": ["Electric current to heater", "Room temperature", "Error signal", "Disturbance from wind"],
-        "correct": 0,
-        "explanation": "Current applied to heater is the manipulated variable."
+        question: "Which is an example of manipulated variable?",
+        options: ["Electric current to heater", "Room temperature", "Error signal", "Disturbance from wind"],
+        correct: 0,
+        explanation: "Current applied to heater is the manipulated variable."
     },
     {
-        "question": "Which is the controlled variable in a thermostat system?",
-        "options": ["Heater power", "Room temperature", "Electrical disturbance", "Control signal"],
-        "correct": 1,
-        "explanation": "Room temperature is the actual controlled variable."
+        question: "Which is the controlled variable in a thermostat system?",
+        options: ["Heater power", "Room temperature", "Electrical disturbance", "Control signal"],
+        correct: 1,
+        explanation: "Room temperature is the actual controlled variable."
     },
     {
-        "question": "The function of control logic elements is to:",
-        "options": ["Compare output with input", "Decide control action from error", "Generate disturbances", "Provide energy"],
-        "correct": 1,
-        "explanation": "Control logic decides how to act based on error."
+        question: "The function of control logic elements is to:",
+        options: ["Compare output with input", "Decide control action from error", "Generate disturbances", "Provide energy"],
+        correct: 1,
+        explanation: "Control logic decides how to act based on error."
     },
     {
-        "question": "The main importance of feedback systems is:",
-        "options": ["Reduce system accuracy", "Maintain stability and correct disturbances", "Increase oscillations", "Avoid using controllers"],
-        "correct": 1,
-        "explanation": "Feedback systems maintain desired performance."
+        question: "The main importance of feedback systems is:",
+        options: ["Reduce system accuracy", "Maintain stability and correct disturbances", "Increase oscillations", "Avoid using controllers"],
+        correct: 1,
+        explanation: "Feedback systems maintain desired performance."
     },
     {
-        "question": "Positive feedback is sometimes used in:",
-        "options": ["Oscillator circuits", "Thermostats", "Cruise control", "Temperature stabilization"],
-        "correct": 0,
-        "explanation": "Oscillators deliberately use positive feedback."
+        question: "Positive feedback is sometimes used in:",
+        options: ["Oscillator circuits", "Thermostats", "Cruise control", "Temperature stabilization"],
+        correct: 0,
+        explanation: "Oscillators deliberately use positive feedback."
     },
     {
-        "question": "Which component transforms control signal into final output?",
-        "options": ["Actuator + plant", "Sensor", "Error detector", "Reference input"],
-        "correct": 0,
-        "explanation": "Plant + actuator together produce final controlled output."
+        question: "Which component transforms control signal into final output?",
+        options: ["Actuator + plant", "Sensor", "Error detector", "Reference input"],
+        correct: 0,
+        explanation: "Plant + actuator together produce final controlled output."
     },
     {
-        "question": "Which control method evolved with robotics and automation?",
-        "options": ["Feedback control", "Open-loop", "Disturbance-only control", "Random trial"],
-        "correct": 0,
-        "explanation": "Robotics relies heavily on feedback control."
+        question: "Which control method evolved with robotics and automation?",
+        options: ["Feedback control", "Open-loop", "Disturbance-only control", "Random trial"],
+        correct: 0,
+        explanation: "Robotics relies heavily on feedback control."
     },
     {
-        "question": "Which real-world system uses closed-loop feedback to regulate position or speed?",
-        "options": ["Servomechanism", "Open-loop toaster", "Traffic light timer", "Basic pump with no sensor"],
-        "correct": 0,
-        "explanation": "Servos follow command precisely with feedback."
+        question: "Which real-world system uses closed-loop feedback to regulate position or speed?",
+        options: ["Servomechanism", "Open-loop toaster", "Traffic light timer", "Basic pump with no sensor"],
+        correct: 0,
+        explanation: "Servos follow command precisely with feedback."
     },
     {
-        "question": "Main advantage of control systems in socio-economic fields (like inventory control):",
-        "options": ["Eliminate feedback", "Reduce waste and optimize resources", "Make processes random", "Always increase cost"],
-        "correct": 1,
-        "explanation": "Control ensures efficiency in managing resources."
+        question: "Main advantage of control systems in socio-economic fields (like inventory control):",
+        options: ["Eliminate feedback", "Reduce waste and optimize resources", "Make processes random", "Always increase cost"],
+        correct: 1,
+        explanation: "Control ensures efficiency in managing resources."
     }
-]
-
         ];
         // ===== END QUIZ DATA =====
 
