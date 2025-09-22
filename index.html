@@ -3,1836 +3,462 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Simple Quiz</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <title>Interactive Quiz</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'light-bg': '#F0F8FF',
+                        'primary-navy': '#1E3A8A',
+                        'section-blue': '#3B82F6',
+                        'accent-blue': '#60A5FA',
+                        'soft-blue': '#93C5FD'
+                    }
+                }
+            }
+        }
+    </script>
     <style>
-        /* General Body and Container Styling */
-        body {
-            font-family: 'Inter', sans-serif;
-            margin: 0;
-            padding: 0;
-            background-color: #f0f2f5;
-            display: flex;
-            justify-content: center;
-            align-items: flex-start; /* Align to top initially */
-            min-height: 100vh;
-            color: #333;
-            box-sizing: border-box;
-            padding: 20px; /* Add some padding around the whole app */
+        .glass-card {
+            background: rgba(255, 255, 255, 0.25);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.18);
+            box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
         }
-
-        .quiz-container {
-            background-color: #ffffff;
-            border-radius: 12px;
-            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.1);
-            width: 100%;
-            max-width: 800px; /* Max width for desktop */
-            padding: 25px;
-            box-sizing: border-box;
-            display: flex;
-            flex-direction: column;
-            gap: 20px;
+        
+        .glass-button {
+            background: rgba(96, 165, 250, 0.3);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(96, 165, 250, 0.4);
+            transition: all 0.3s ease;
+            transform: translateZ(0);
         }
-
-        /* Header and Score/Progress Bar */
-        .quiz-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            flex-wrap: wrap; /* Allow wrapping on small screens */
-            gap: 15px;
-            padding-bottom: 15px;
-            border-bottom: 1px solid #eee;
+        
+        .glass-button:hover {
+            background: rgba(96, 165, 250, 0.5);
+            transform: translateY(-2px) translateZ(10px);
+            box-shadow: 0 12px 40px rgba(96, 165, 250, 0.3);
         }
-
-        .score-progress {
-            display: flex;
-            flex-direction: column;
-            gap: 5px;
+        
+        .correct-answer {
+            background: rgba(34, 197, 94, 0.3) !important;
+            border-color: rgba(34, 197, 94, 0.6) !important;
+            animation: correctPulse 0.6s ease-in-out;
         }
-
-        .score-display, .question-count {
-            font-weight: 600;
-            font-size: 1.1em;
-            color: #4a4a4a;
+        
+        .wrong-answer {
+            background: rgba(239, 68, 68, 0.3) !important;
+            border-color: rgba(239, 68, 68, 0.6) !important;
+            animation: wrongShake 0.6s ease-in-out;
         }
-
-        .progress-bar-container {
-            width: 100%;
-            height: 10px;
-            background-color: #e0e0e0;
-            border-radius: 5px;
-            overflow: hidden;
+        
+        @keyframes correctPulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
         }
-
-        .progress-bar {
-            height: 100%;
-            width: 0%;
-            background-color: #4CAF50; /* Green for progress */
-            border-radius: 5px;
-            transition: width 0.3s ease-in-out;
+        
+        @keyframes wrongShake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-5px); }
+            75% { transform: translateX(5px); }
         }
-
-        /* Tab Navigation */
-        .quiz-tabs {
-            display: flex;
-            overflow-x: auto; /* Enable horizontal scrolling */
-            -webkit-overflow-scrolling: touch; /* Smooth scrolling on iOS */
-            padding-bottom: 10px; /* Space for scrollbar */
-            white-space: nowrap; /* Prevent tabs from wrapping */
-            border-bottom: 1px solid #eee;
+        
+        .progress-fill {
+            transition: width 0.8s cubic-bezier(0.4, 0, 0.2, 1);
         }
-
-        .quiz-tabs::-webkit-scrollbar {
-            height: 8px; /* Height of the scrollbar */
+        
+        .fade-in {
+            animation: fadeIn 0.5s ease-in-out;
         }
-
-        .quiz-tabs::-webkit-scrollbar-thumb {
-            background-color: #ccc; /* Color of the scrollbar thumb */
-            border-radius: 4px; /* Rounded corners for the thumb */
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
         }
-
-        .quiz-tabs::-webkit-scrollbar-track {
-            background-color: #f0f0f0; /* Color of the scrollbar track */
-            border-radius: 4px;
+        
+        .floating {
+            animation: floating 6s ease-in-out infinite;
         }
-
-
-        .tab-button {
-            flex-shrink: 0; /* Prevent tabs from shrinking */
-            padding: 10px 18px;
-            margin-right: 10px;
-            border: none;
-            border-radius: 8px;
-            background-color: #e9ecef;
-            color: #555;
-            font-size: 1em;
-            cursor: pointer;
-            transition: background-color 0.3s ease, color 0.3s ease, transform 0.2s ease;
-            white-space: nowrap; /* Keep text on single line */
-            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
-        }
-
-        .tab-button:hover {
-            background-color: #d1d8df;
-        }
-
-        .tab-button.active {
-            background-color: #007bff; /* Active tab color */
-            color: #ffffff;
-            box-shadow: 0 4px 10px rgba(0, 123, 255, 0.2);
-            transform: translateY(-2px); /* Slight lift */
-        }
-
-        /* Question Content */
-        .question-container {
-            margin-top: 10px;
-        }
-
-        .question-text {
-            font-size: 1.35em;
-            font-weight: 700;
-            margin-bottom: 20px;
-            line-height: 1.4;
-        }
-
-        .options-container {
-            display: flex;
-            flex-direction: column;
-            gap: 12px;
-        }
-
-        .option-button {
-            width: 100%;
-            padding: 15px 20px;
-            border: 1px solid #ced4da;
-            border-radius: 10px;
-            background-color: #f8f9fa;
-            font-size: 1.1em;
-            text-align: left;
-            cursor: pointer;
-            transition: background-color 0.3s ease, border-color 0.3s ease, transform 0.1s ease;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
-        }
-
-        .option-button:hover:not(:disabled) {
-            background-color: #e9ecef;
-            border-color: #b3cde0;
-            transform: translateY(-1px);
-        }
-
-        .option-button:disabled {
-            cursor: not-allowed;
-            opacity: 0.8;
-        }
-
-        /* Answer Highlighting */
-        .option-button.correct {
-            background-color: #d4edda; /* Light green */
-            border-color: #28a745; /* Darker green border */
-            color: #155724;
-            font-weight: 600;
-        }
-
-        .option-button.incorrect {
-            background-color: #f8d7da; /* Light red */
-            border-color: #dc3545; /* Darker red border */
-            color: #721c24;
-            font-weight: 600;
-        }
-
-        /* Explanation */
-        .explanation-container {
-            margin-top: 20px;
-            padding: 15px;
-            background-color: #e0f7fa; /* Light blue */
-            border-left: 5px solid #00acc1; /* Cyan border */
-            border-radius: 8px;
-            font-size: 0.95em;
-            line-height: 1.5;
-            color: #004d40;
-            display: none; /* Hidden by default */
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
-        }
-
-        .explanation-container.show {
-            display: block; /* Show when 'show' class is added */
-        }
-
-        /* Navigation Buttons */
-        .quiz-footer {
-            margin-top: 25px;
-            display: flex;
-            justify-content: flex-end; /* Align to right */
-        }
-
-        .next-button {
-            padding: 12px 25px;
-            border: none;
-            border-radius: 8px;
-            background-color: #28a745; /* Green for Next */
-            color: #ffffff;
-            font-size: 1.1em;
-            cursor: pointer;
-            transition: background-color 0.3s ease, transform 0.2s ease, box-shadow 0.3s ease;
-            box-shadow: 0 4px 10px rgba(40, 167, 69, 0.2);
-            font-weight: 600;
-        }
-
-        .next-button:hover:not(:disabled) {
-            background-color: #218838;
-            transform: translateY(-2px);
-            box-shadow: 0 6px 15px rgba(40, 167, 69, 0.3);
-        }
-
-        .next-button:disabled {
-            background-color: #cccccc;
-            cursor: not-allowed;
-            opacity: 0.7;
-            box-shadow: none;
-        }
-
-        /* Mobile Responsiveness */
-        @media (max-width: 768px) {
-            .quiz-container {
-                padding: 15px;
-                margin: 10px;
-            }
-
-            .quiz-header {
-                flex-direction: column;
-                align-items: flex-start;
-                gap: 10px;
-            }
-
-            .score-progress {
-                width: 100%;
-                align-items: stretch;
-            }
-
-            .question-text {
-                font-size: 1.15em;
-                margin-bottom: 15px;
-            }
-
-            .option-button {
-                padding: 12px 18px;
-                font-size: 1em;
-            }
-
-            .next-button {
-                width: 100%; /* Full width button on mobile */
-                padding: 15px;
-                font-size: 1em;
-            }
-
-            .quiz-tabs {
-                padding-bottom: 5px; /* Less space for scrollbar on mobile */
-            }
-
-            .tab-button {
-                padding: 8px 15px;
-                margin-right: 8px;
-                font-size: 0.95em;
-            }
+        
+        @keyframes floating {
+            0%, 100% { transform: translateY(0px) rotate(0deg); }
+            50% { transform: translateY(-20px) rotate(2deg); }
         }
     </style>
 </head>
-<body>
-    <div class="quiz-container">
-        <header class="quiz-header">
-            <div class="score-progress">
-                <div class="score-display">Score: <span id="score">0</span></div>
-                <div class="question-count"><span id="current-q-num">0</span> / <span id="total-q-num">0</span></div>
-            </div>
-            <div class="progress-bar-container">
-                <div id="progress-bar" class="progress-bar"></div>
-            </div>
-        </header>
+<body class="min-h-screen bg-gradient-to-br from-light-bg via-soft-blue to-accent-blue overflow-x-hidden">
+    <!-- Floating Background Elements -->
+    <div class="fixed inset-0 overflow-hidden pointer-events-none">
+        <div class="floating absolute top-20 left-10 w-20 h-20 bg-primary-navy opacity-10 rounded-full"></div>
+        <div class="floating absolute top-40 right-20 w-32 h-32 bg-section-blue opacity-10 rounded-full" style="animation-delay: -2s;"></div>
+        <div class="floating absolute bottom-20 left-1/4 w-16 h-16 bg-accent-blue opacity-10 rounded-full" style="animation-delay: -4s;"></div>
+    </div>
 
-        <nav class="quiz-tabs" id="quiz-tabs"></nav>
+    <div class="container mx-auto px-4 py-8 relative z-10">
+        <!-- Header -->
+        <div class="text-center mb-8">
+            <h1 class="text-4xl md:text-5xl font-bold text-primary-navy mb-4 drop-shadow-lg">
+                Interactive Quiz
+            </h1>
+            <p class="text-section-blue text-lg">Test your knowledge with style!</p>
+        </div>
 
-        <main class="quiz-content">
-            <div class="question-container">
-                <p id="question-text" class="question-text">Loading question...</p>
-                <div id="options-container" class="options-container">
-                    <!-- Options will be dynamically loaded here -->
+        <!-- Progress Bar -->
+        <div class="glass-card rounded-2xl p-6 mb-8 transform hover:scale-105 transition-transform duration-300">
+            <div class="flex justify-between items-center mb-4">
+                <span class="text-primary-navy font-semibold">Progress</span>
+                <span class="text-primary-navy font-semibold" id="progress-text">0 / 0</span>
+            </div>
+            <div class="w-full bg-white bg-opacity-30 rounded-full h-4 overflow-hidden">
+                <div class="progress-fill h-full bg-gradient-to-r from-section-blue to-accent-blue rounded-full" 
+                     id="progress-bar" style="width: 0%"></div>
+            </div>
+        </div>
+
+        <!-- Score Display -->
+        <div class="glass-card rounded-2xl p-6 mb-8 transform hover:scale-105 transition-transform duration-300">
+            <div class="text-center">
+                <h3 class="text-primary-navy font-semibold mb-2">Current Score</h3>
+                <div class="text-3xl font-bold text-section-blue" id="score-display">0</div>
+            </div>
+        </div>
+
+        <!-- Quiz Container -->
+        <div class="glass-card rounded-3xl p-8 mb-8 transform hover:scale-105 transition-transform duration-300" id="quiz-container">
+            <div id="question-container" class="fade-in">
+                <h2 class="text-2xl md:text-3xl font-bold text-primary-navy mb-8 text-center" id="question-text">
+                    Loading quiz...
+                </h2>
+                
+                <div class="space-y-4" id="options-container">
+                    <!-- Options will be generated here -->
                 </div>
-                <div id="explanation-container" class="explanation-container">
-                    <p id="explanation-text"></p>
+                
+                <div id="explanation-container" class="mt-8 p-6 glass-card rounded-2xl hidden">
+                    <h4 class="text-lg font-semibold text-primary-navy mb-3">Explanation:</h4>
+                    <p class="text-section-blue leading-relaxed" id="explanation-text"></p>
+                    <button onclick="nextQuestion()" 
+                            class="mt-6 glass-button px-8 py-3 rounded-xl text-primary-navy font-semibold hover:text-white transition-colors duration-300">
+                        Next Question →
+                    </button>
                 </div>
             </div>
-        </main>
+        </div>
 
-        <footer class="quiz-footer">
-            <button id="next-button" class="next-button" disabled>Next Question</button>
-        </footer>
+        <!-- Final Results -->
+        <div id="results-container" class="glass-card rounded-3xl p-8 text-center hidden transform hover:scale-105 transition-transform duration-300">
+            <h2 class="text-3xl font-bold text-primary-navy mb-6">Quiz Complete! 🎉</h2>
+            <div class="text-6xl font-bold text-section-blue mb-4" id="final-score"></div>
+            <p class="text-xl text-primary-navy mb-8" id="final-message"></p>
+            <button onclick="restartQuiz()" 
+                    class="glass-button px-8 py-4 rounded-xl text-primary-navy font-semibold hover:text-white transition-colors duration-300 text-lg">
+                Take Quiz Again
+            </button>
+        </div>
     </div>
 
     <script>
-        // Quiz Data Structure
+        // ===== QUIZ DATA - PASTE YOUR QUESTIONS HERE =====
         const quizData = [
-            // MCQs - PCM Sampling, Sampling Rate, Quantization, and Coding (60 questions)
             {
-                id: 'pcm-1', type: 'mcq', topic: 'PCM Sampling, Sampling Rate, Quantization, and Coding',
-                question: 'What is the primary purpose of Pulse Code Modulation (PCM)?',
-                options: ['To modulate a digital signal onto an analog carrier.', 'To convert an analog signal into a digital signal.', 'To amplify an analog signal.', 'To filter out noise from a digital signal.'],
-                correctAnswer: 1, // b) To convert an analog signal into a digital signal.
-                explanation: 'PCM is a method used to convert continuous analog signals into discrete digital representations for transmission or storage.'
+                question: "What is the primary purpose of a control system?",
+                options: ["To generate energy", "To regulate system output according to a desired setpoint", "To store signals for later use", "To eliminate all disturbances permanently"],
+                correct: 1,
+                explanation: "Control systems regulate behavior to achieve a setpoint. (A is power, C is memory, D is unrealistic.)"
             },
             {
-                id: 'pcm-2', type: 'mcq', topic: 'PCM Sampling, Sampling Rate, Quantization, and Coding',
-                question: 'According to the Nyquist-Shannon sampling theorem, what is the minimum sampling rate required to perfectly reconstruct an analog signal?',
-                options: ["Equal to the signal's highest frequency.", "Half the signal's highest frequency.", "Twice the signal's highest frequency.", "Four times the signal's highest frequency."],
-                correctAnswer: 2, // c) Twice the signal's highest frequency.
-                explanation: 'The Nyquist rate states that the sampling frequency must be at least twice the maximum frequency component of the analog signal to avoid aliasing.'
+                question: "Which of the following is considered the \"object of control\"?",
+                options: ["Plant/Process", "Controller", "Sensor", "Actuator"],
+                correct: 0,
+                explanation: "The plant (or process) is the system being controlled."
             },
             {
-                id: 'pcm-3', type: 'mcq', topic: 'PCM Sampling, Sampling Rate, Quantization, and Coding',
-                question: 'What phenomenon occurs if an analog signal is sampled below the Nyquist rate?',
-                options: ['Quantization error', 'Clipping', 'Aliasing', 'Jitter'],
-                correctAnswer: 2, // c) Aliasing
-                explanation: 'Aliasing occurs when the sampling rate is too low, causing different continuous signals to become indistinguishable when sampled, leading to distortion.'
+                question: "A device that measures output variables is called a:",
+                options: ["Controller", "Actuator", "Sensor", "Plant"],
+                correct: 2,
+                explanation: "Sensors measure actual outputs for feedback."
             },
             {
-                id: 'pcm-4', type: 'mcq', topic: 'PCM Sampling, Sampling Rate, Quantization, and Coding',
-                question: 'Which step in PCM involves converting continuous amplitude values into discrete levels?',
-                options: ['Sampling', 'Quantization', 'Encoding', 'Filtering'],
-                correctAnswer: 1, // b) Quantization
-                explanation: 'Quantization is the process of mapping a continuous range of input values into a smaller set of discrete values.'
+                question: "Which component is responsible for implementing the control signal into physical action?",
+                options: ["Sensor", "Actuator", "Controller", "Disturbance"],
+                correct: 1,
+                explanation: "The actuator applies the control signal to the plant."
             },
             {
-                id: 'pcm-5', type: 'mcq', topic: 'PCM Sampling, Sampling Rate, Quantization, and Coding',
-                question: 'What is quantization error (or quantization noise)?',
-                options: ['Noise introduced during signal transmission.', 'The difference between the actual analog value and its quantized digital representation.', 'Error caused by incorrect sampling rate.', 'Noise from external interference.'],
-                correctAnswer: 1, // b) The difference between the actual analog value and its quantized digital representation.
-                explanation: 'Quantization error is inherent in the conversion process and represents the loss of information when continuous values are approximated by discrete levels.'
+                question: "The difference between desired and actual output is called the:",
+                options: ["Setpoint", "Error Signal", "Control Signal", "Manipulated Variable"],
+                correct: 1,
+                explanation: "Error signal = Setpoint – Output."
             },
             {
-                id: 'pcm-6', type: 'mcq', topic: 'PCM Sampling, Sampling Rate, Quantization, and Coding',
-                question: 'How can quantization error be reduced?',
-                options: ['By decreasing the sampling rate.', 'By increasing the number of quantization levels.', 'By using a lower bit rate.', 'By increasing the signal\'s amplitude.'],
-                correctAnswer: 1, // b) By increasing the number of quantization levels.
-                explanation: 'More quantization levels (which implies more bits per sample) allow for a finer approximation of the analog signal, thereby reducing the error.'
+                question: "The desired output value of a system is called the:",
+                options: ["Controlled Variable", "Manipulated Variable", "Setpoint (Reference Input)", "Feedback"],
+                correct: 2,
+                explanation: "The setpoint is the target output."
             },
             {
-                id: 'pcm-7', type: 'mcq', topic: 'PCM Sampling, Sampling Rate, Quantization, and Coding',
-                question: 'What is a "quantization level"?',
-                options: ['The frequency of the sampled signal.', 'A discrete amplitude value used to represent a range of analog amplitudes.', 'The time interval between samples.', 'The number of bits in a digital word.'],
-                correctAnswer: 1, // b) A discrete amplitude value used to represent a range of analog amplitudes.
-                explanation: 'Each quantization level represents a specific amplitude point to which analog samples are rounded.'
+                question: "The physical input that directly influences the plant is known as:",
+                options: ["Control Signal", "Manipulated Variable", "Disturbance", "Error Signal"],
+                correct: 1,
+                explanation: "Manipulated variable is what directly acts on the process."
             },
             {
-                id: 'pcm-8', type: 'mcq', topic: 'PCM Sampling, Sampling Rate, Quantization, and Coding',
-                question: 'What is the purpose of the "folded binary code" in PCM?',
-                options: ['To increase the dynamic range.', 'To represent positive and negative analog values efficiently.', 'To reduce the sampling rate.', 'To eliminate quantization noise.'],
-                correctAnswer: 1, // b) To represent positive and negative analog values efficiently.
-                explanation: 'Folded binary code is a type of sign-magnitude representation often used in PCM to handle both positive and negative amplitudes symmetrically around zero.'
+                question: "Which of the following best describes a disturbance input?",
+                options: ["A controllable variable adjusted by the user", "An uncontrollable external factor affecting the system", "A reference signal", "The actuator output"],
+                correct: 1,
+                explanation: "Disturbances are unwanted inputs outside designer’s control."
             },
             {
-                id: 'pcm-9', type: 'mcq', topic: 'PCM Sampling, Sampling Rate, Quantization, and Coding',
-                question: 'If a PCM system uses N bits for quantization, how many possible quantization levels are there?',
-                options: ['N', '2N', 'N^2', '2^N'],
-                correctAnswer: 3, // d) 2^N
-                explanation: 'Each bit can be either 0 or 1, so N bits allow for 2^N unique combinations, each representing a quantization level.'
+                question: "In an open-loop system:",
+                options: ["Feedback corrects the error", "Sensors measure and adjust output", "Output is not compared with input", "The error signal is always zero"],
+                correct: 2,
+                explanation: "Open-loop systems do not use feedback."
             },
             {
-                id: 'pcm-10', type: 'mcq', topic: 'PCM Sampling, Sampling Rate, Quantization, and Coding',
-                question: 'What is "dynamic range" in the context of PCM?',
-                options: ['The range of frequencies a system can handle.', 'The ratio of the maximum possible signal amplitude to the minimum detectable signal amplitude.', 'The difference between the highest and lowest sampling rates.', 'The range of quantization error.'],
-                correctAnswer: 1, // b) The ratio of the maximum possible signal amplitude to the minimum detectable signal amplitude.
-                explanation: 'Dynamic range quantifies the difference between the loudest and quietest signals a system can process without distortion.'
+                question: "Which system can automatically adjust to disturbances?",
+                options: ["Open-loop", "Closed-loop", "Manual system", "Nonlinear system"],
+                correct: 1,
+                explanation: "Closed-loop uses feedback to correct deviations."
             },
             {
-                id: 'pcm-11', type: 'mcq', topic: 'PCM Sampling, Sampling Rate, Quantization, and Coding',
-                question: 'How is dynamic range typically expressed?',
-                options: ['In Hertz (Hz)', 'In Watts (W)', 'In Decibels (dB)', 'In Volts (V)'],
-                correctAnswer: 2, // c) In Decibels (dB)
-                explanation: 'Decibels are a logarithmic unit commonly used to express ratios of power or amplitude, making them suitable for representing dynamic range.'
+                question: "A thermostat regulating room temperature is an example of:",
+                options: ["Open-loop system", "Closed-loop feedback system", "Disturbance", "Manipulated variable"],
+                correct: 1,
+                explanation: "It measures temperature, compares with setpoint, and adjusts."
             },
             {
-                id: 'pcm-12', type: 'mcq', topic: 'PCM Sampling, Sampling Rate, Quantization, and Coding',
-                question: 'What does "coding efficiency" refer to in PCM?',
-                options: ['The speed of the encoding process.', 'The ratio of useful information bits to total transmitted bits.', 'The accuracy of the quantization process.', 'The ability to transmit data over long distances.'],
-                correctAnswer: 1, // b) The ratio of useful information bits to total transmitted bits.
-                explanation: 'Coding efficiency measures how effectively the available bits are used to represent the signal information without unnecessary redundancy.'
+                question: "Negative feedback is important because it:",
+                options: ["Stabilizes the system and reduces error", "Always increases gain", "Causes instability", "Removes the need for sensors"],
+                correct: 0,
+                explanation: "Negative feedback reduces error and improves stability."
             },
             {
-                id: 'pcm-13', type: 'mcq', topic: 'PCM Sampling, Sampling Rate, Quantization, and Coding',
-                question: 'What is the Signal-to-Quantization Noise Ratio (SQNR)?',
-                options: ['A measure of the total noise in a system.', 'The ratio of signal power to thermal noise power.', 'The ratio of signal power to quantization noise power.', 'The ratio of signal bandwidth to noise bandwidth.'],
-                correctAnswer: 2, // c) The ratio of signal power to quantization noise power.
-                explanation: 'SQNR indicates the quality of the quantized signal; a higher SQNR means less noticeable quantization noise.'
+                question: "Positive feedback is generally avoided because it:",
+                options: ["Increases stability", "Amplifies deviations and may cause instability", "Reduces gain", "Cancels disturbances completely"],
+                correct: 1,
+                explanation: "Positive feedback amplifies errors instead of correcting them."
             },
             {
-                id: 'pcm-14', type: 'mcq', topic: 'PCM Sampling, Sampling Rate, Quantization, and Coding',
-                question: 'How does increasing the number of bits per sample generally affect SQNR?',
-                options: ['It decreases SQNR.', 'It increases SQNR.', 'It has no effect on SQNR.', 'It only affects the sampling rate.'],
-                correctAnswer: 1, // b) It increases SQNR.
-                explanation: 'More bits per sample lead to finer quantization steps, which reduces the quantization noise, thereby improving the SQNR.'
+                question: "Which type of feedback is most commonly used in engineering control systems?",
+                options: ["Negative feedback", "Positive feedback", "Zero feedback", "Manual feedback"],
+                correct: 0,
+                explanation: "Negative feedback is stable and widely used."
             },
             {
-                id: 'pcm-15', type: 'mcq', topic: 'PCM Sampling, Sampling Rate, Quantization, and Coding',
-                question: 'What is a key characteristic of "linear PCM codes"?',
-                options: ['They use a variable step size for quantization.', 'The step size between quantization levels is constant.', 'They prioritize lower amplitude signals.', 'They require less bandwidth than nonlinear codes.'],
-                correctAnswer: 1, // b) The step size between quantization levels is constant.
-                explanation: 'In linear PCM, each step in amplitude corresponds to the same change in digital code, meaning the quantization levels are uniformly spaced.'
+                question: "The brain of the control system is the:",
+                options: ["Controller", "Plant", "Sensor", "Actuator"],
+                correct: 0,
+                explanation: "The controller decides corrective actions."
             },
             {
-                id: 'pcm-16', type: 'mcq', topic: 'PCM Sampling, Sampling Rate, Quantization, and Coding',
-                question: 'What is a disadvantage of linear PCM when dealing with signals that have a wide dynamic range?',
-                options: ['It requires a lower sampling rate.', 'It can lead to significant quantization noise for low-amplitude signals.', 'It is more complex to implement.', 'It consumes more power.'],
-                correctAnswer: 1, // b) It can lead to significant quantization noise for low-amplitude signals.
-                explanation: 'With a fixed step size, low-amplitude signals are quantized with relatively fewer levels, leading to a poorer SQNR compared to their actual amplitude.'
+                question: "Which element of a control system is referred to as the \"muscle\"?",
+                options: ["Controller", "Sensor", "Actuator", "Reference"],
+                correct: 2,
+                explanation: "The actuator applies physical force/energy."
             },
             {
-                id: 'pcm-17', type: 'mcq', topic: 'PCM Sampling, Sampling Rate, Quantization, and Coding',
-                question: 'What is "idle channel noise" in PCM?',
-                options: ['Noise present when no signal is being transmitted.', 'Noise caused by data transmission errors.', 'Noise introduced during the sampling process.', 'Noise due to external interference.'],
-                correctAnswer: 0, // a) Noise present when no signal is being transmitted.
-                explanation: 'Idle channel noise is the residual noise floor that exists even when the input signal is zero, often due to the inherent quantization noise.'
+                question: "The actual measured output of the system is called the:",
+                options: ["Disturbance", "Controlled Variable", "Setpoint", "Control Signal"],
+                correct: 1,
+                explanation: "Controlled variable = actual output."
             },
             {
-                id: 'pcm-18', type: 'mcq', topic: 'PCM Sampling, Sampling Rate, Quantization, and Coding',
-                question: 'What is the primary purpose of "companding" in PCM?',
-                options: ['To increase the sampling rate.', 'To reduce the number of bits per sample.', 'To improve the SQNR for low-amplitude signals.', 'To eliminate aliasing.'],
-                correctAnswer: 2, // c) To improve the SQNR for low-amplitude signals.
-                explanation: 'Companding non-linearly compresses the signal before quantization and expands it afterwards, effectively giving more quantization levels to low-amplitude signals.'
+                question: "The signal generated by the controller is called the:",
+                options: ["Control Signal", "Error Signal", "Feedback Signal", "Manipulated Variable"],
+                correct: 0,
+                explanation: "The control signal is produced to correct the error."
             },
             {
-                id: 'pcm-19', type: 'mcq', topic: 'PCM Sampling, Sampling Rate, Quantization, and Coding',
-                question: 'What are the two main types of companding commonly used?',
-                options: ['Linear and nonlinear', 'Analog and digital', 'Time-domain and frequency-domain', 'U-Law and A-Law'],
-                correctAnswer: 3, // d) U-Law and A-Law
-                explanation: 'U-Law and A-Law are the two standardized companding algorithms used in telecommunications.'
+                question: "The summing junction that compares reference and feedback signals produces the:",
+                options: ["Control Signal", "Error Signal", "Manipulated Variable", "Plant Input"],
+                correct: 1,
+                explanation: "The error detector outputs the error signal."
             },
             {
-                id: 'pcm-20', type: 'mcq', topic: 'PCM Sampling, Sampling Rate, Quantization, and Coding',
-                question: 'Which companding standard is primarily used in North America and Japan?',
-                options: ['A-Law', 'U-Law', 'G.711', 'PCM-30'],
-                correctAnswer: 1, // b) U-Law
-                explanation: 'U-Law companding is widely adopted in these regions for digital telephony.'
+                question: "Servomechanisms are primarily used in:",
+                options: ["Power generation", "Command-following systems like motion control", "Heat transfer systems", "Chemical processes"],
+                correct: 1,
+                explanation: "Servos follow position, speed, or acceleration commands."
             },
             {
-                id: 'pcm-21', type: 'mcq', topic: 'PCM Sampling, Sampling Rate, Quantization, and Coding',
-                question: 'Which companding standard is primarily used in Europe and the rest of the world?',
-                options: ['A-Law', 'U-Law', 'G.711', 'PCM-24'],
-                correctAnswer: 0, // a) A-Law
-                explanation: 'A-Law companding is the standard for digital telephony in most other parts of the world.'
+                question: "Early 1900–1940s control systems were mainly:",
+                options: ["Empirical and experiment-driven", "Based on advanced feedback theory", "Driven by robotics needs", "Fully automated digital systems"],
+                correct: 0,
+                explanation: "Early systems relied on trial-and-error approaches."
             },
             {
-                id: 'pcm-22', type: 'mcq', topic: 'PCM Sampling, Sampling Rate, Quantization, and Coding',
-                question: 'How does companding affect the effective quantization step size for small signals?',
-                options: ['It increases the step size.', 'It decreases the step size.', 'It keeps the step size constant.', 'It eliminates the step size.'],
-                correctAnswer: 1, // b) It decreases the step size.
-                explanation: 'By compressing small signals, companding effectively allocates more quantization levels to them, making the step size smaller for those amplitudes.'
+                question: "The major driver for scientific control theory during WWII was:",
+                options: ["Factory automation", "Military applications", "Entertainment systems", "Agriculture"],
+                correct: 1,
+                explanation: "Military needs accelerated scientific control development."
             },
             {
-                id: 'pcm-23', type: 'mcq', topic: 'PCM Sampling, Sampling Rate, Quantization, and Coding',
-                question: 'What is "analog companding"?',
-                options: ['Companding applied after digital conversion.', 'Companding implemented using analog circuits before A/D conversion.', 'Companding that only works with analog signals.', 'Companding that uses a linear function.'],
-                correctAnswer: 1, // b) Companding implemented using analog circuits before A/D conversion.
-                explanation: 'Analog companding modifies the signal\'s amplitude before it is sampled and quantized by the analog-to-digital converter.'
+                question: "Servomechanism theory for motion control was developed in which period?",
+                options: ["Pre-1900", "1940–1950", "1960s", "2000s"],
+                correct: 1,
+                explanation: "Servomechanism theory was formalized during 1940–1950."
             },
             {
-                id: 'pcm-24', type: 'mcq', topic: 'PCM Sampling, Sampling Rate, Quantization, and Coding',
-                question: 'What is "digital companding"?',
-                options: ['Companding applied before the analog-to-digital conversion.', 'Companding implemented by mathematically processing the digital samples after A/D conversion.', 'Companding that only works with digital signals.', 'Companding that uses a fixed compression ratio.'],
-                correctAnswer: 1, // b) Companding implemented by mathematically processing the digital samples after A/D conversion.
-                explanation: 'Digital companding applies the compression and expansion algorithms directly to the digitized samples.'
+                question: "After WWII, process control methods converged with:",
+                options: ["Open-loop theory", "Servomechanism methods", "Agricultural practices", "Robotics only"],
+                correct: 1,
+                explanation: "Postwar control theory unified process-control and servo approaches."
             },
             {
-                id: 'pcm-25', type: 'mcq', topic: 'PCM Sampling, Sampling Rate, Quantization, and Coding',
-                question: 'The standard for PCM encoding of voice, including both A-Law and U-Law, is defined by which ITU-T recommendation?',
-                options: ['G.703', 'G.711', 'G.722', 'G.729'],
-                correctAnswer: 1, // b) G.711
-                explanation: 'G.711 is the ITU-T standard for pulse code modulation of voice frequencies.'
+                question: "Which variable is typically controlled in process industries?",
+                options: ["Liquid level", "Temperature", "Pressure", "All of the above"],
+                correct: 3,
+                explanation: "Process industries control many variables like flow, temp, pressure."
             },
             {
-                id: 'pcm-26', type: 'mcq', topic: 'PCM Sampling, Sampling Rate, Quantization, and Coding',
-                question: 'Why is a uniform quantizer (linear PCM) less suitable for speech signals?',
-                options: ['Speech signals have a very narrow dynamic range.', 'Speech signal power is concentrated at high amplitudes.', 'Speech signals have a wide dynamic range, and low-amplitude sounds are common and important.', 'Speech signals are inherently digital.'],
-                correctAnswer: 2, // c) Speech signals have a wide dynamic range, and low-amplitude sounds are common and important.
-                explanation: 'Speech contains both loud and soft sounds; a linear quantizer would allocate too many levels to the less critical high-amplitude signals and too few to the important low-amplitude ones.'
+                question: "Why are control systems important in process industries?",
+                options: ["To increase machine size", "To ensure safety, quality, and efficiency", "To make systems more complex", "To avoid using sensors"],
+                correct: 1,
+                explanation: "Control ensures safe and efficient operation."
             },
             {
-                id: 'pcm-27', type: 'mcq', topic: 'PCM Sampling, Sampling Rate, Quantization, and Coding',
-                question: 'What is the approximate SQNR improvement (in dB) for every additional bit used in a linear PCM system?',
-                options: ['3 dB', '6 dB', '9 dB', '12 dB'],
-                correctAnswer: 1, // b) 6 dB
-                explanation: 'For each additional bit, the number of quantization levels doubles, effectively halving the quantization error and improving the SQNR by approximately 6 dB.'
+                question: "In a pump system, the actuator transfers energy to water using:",
+                options: ["Centrifugal force from impellers", "Heat conduction", "Electrical storage", "Acoustic waves"],
+                correct: 0,
+                explanation: "Pump impellers push water outward by centrifugal force."
             },
             {
-                id: 'pcm-28', type: 'mcq', topic: 'PCM Sampling, Sampling Rate, Quantization, and Coding',
-                question: 'The process of converting discrete-time, discrete-amplitude signals back into continuous-time, continuous-amplitude signals is called:',
-                options: ['Sampling', 'Quantization', 'Demodulation', 'Reconstruction (or Decoding)'],
-                correctAnswer: 3, // d) Reconstruction (or Decoding)
-                explanation: 'After digital transmission, the PCM signal needs to be converted back into its original analog form using a Digital-to-Analog Converter (DAC) and a low-pass filter.'
+                question: "In an electric hand dryer, the heater and fan motor are part of the:",
+                options: ["Controller", "Actuator/Plant", "Sensor", "Feedback"],
+                correct: 1,
+                explanation: "They execute control action by generating heat and airflow."
             },
             {
-                id: 'pcm-29', type: 'mcq', topic: 'PCM Sampling, Sampling Rate, Quantization, and Coding',
-                question: 'What is the primary factor determining the bit rate of a PCM system?',
-                options: ['Signal amplitude and noise level.', 'Sampling rate and number of bits per sample.', 'Transmission distance and cable type.', 'Type of modulation used.'],
-                correctAnswer: 1, // b) Sampling rate and number of bits per sample.
-                explanation: 'Bit rate = Sampling Rate * Bits per sample. These two parameters directly determine the amount of data generated per unit of time.'
+                question: "In a thermostat system, when the actual temp is below setpoint, the controller sends a signal to:",
+                options: ["Lower the temperature further", "Turn on the heater", "Turn off the heater", "Disable the sensor"],
+                correct: 1,
+                explanation: "The actuator (heater) turns on to increase temperature."
             },
             {
-                id: 'pcm-30', type: 'mcq', topic: 'PCM Sampling, Sampling Rate, Quantization, and Coding',
-                question: 'In the context of folded binary code, what does the most significant bit (MSB) typically represent?',
-                options: ['The magnitude of the sample.', 'The sign of the sample (positive or negative).', 'The least significant digit.', 'A parity bit.'],
-                correctAnswer: 1, // b) The sign of the sample (positive or negative).
-                explanation: 'In folded binary, the MSB is usually reserved to indicate whether the amplitude is positive or negative.'
-            },
-            {
-                id: 'pcm-31', type: 'mcq', topic: 'PCM Sampling, Sampling Rate, Quantization, and Coding',
-                question: 'A PCM system samples an analog signal at 8 kHz and uses 8 bits per sample. What is the resulting bit rate?',
-                options: ['16 kbps', '32 kbps', '64 kbps', '128 kbps'],
-                correctAnswer: 2, // c) 64 kbps
-                explanation: 'Bit Rate = Sampling Rate * Bits per sample = 8000 samples/second * 8 bits/sample = 64000 bits/second = 64 kbps.'
-            },
-            {
-                id: 'pcm-32', type: 'mcq', topic: 'PCM Sampling, Sampling Rate, Quantization, and Coding',
-                question: 'If a signal has a maximum frequency of 4 kHz, what is the minimum theoretical sampling rate according to the Nyquist theorem?',
-                options: ['2 kHz', '4 kHz', '8 kHz', '16 kHz'],
-                correctAnswer: 2, // c) 8 kHz
-                explanation: 'Minimum sampling rate = 2 * Maximum frequency = 2 * 4 kHz = 8 kHz.'
-            },
-            {
-                id: 'pcm-33', type: 'mcq', topic: 'PCM Sampling, Sampling Rate, Quantization, and Coding',
-                question: 'Which of the following is a direct consequence of increasing the number of quantization levels in PCM?',
-                options: ['Reduced bandwidth.', 'Increased aliasing.', 'Improved signal fidelity.', 'Lower dynamic range.'],
-                correctAnswer: 2, // c) Improved signal fidelity.
-                explanation: 'More levels allow for a more accurate representation of the original analog signal, leading to higher fidelity.'
-            },
-            {
-                id: 'pcm-34', type: 'mcq', topic: 'PCM Sampling, Sampling Rate, Quantization, and Coding',
-                question: 'What is the primary benefit of nonlinear PCM codes (like companding) over linear PCM codes?',
-                options: ['Simpler implementation.', 'Higher bit rate.', 'Better signal-to-noise ratio for weaker signals.', 'Reduced power consumption.'],
-                correctAnswer: 2, // c) Better signal-to-noise ratio for weaker signals.
-                explanation: 'Nonlinear codes allocate more quantization levels to low-amplitude signals, improving their SQNR at the expense of higher amplitude signals, which are typically less sensitive to quantization noise.'
-            },
-            {
-                id: 'pcm-35', type: 'mcq', topic: 'PCM Sampling, Sampling Rate, Quantization, and Coding',
-                question: 'The process of uniformly spacing the analog samples in time is called:',
-                options: ['Quantization', 'Encoding', 'Sampling', 'Filtering'],
-                correctAnswer: 2, // c) Sampling
-                explanation: 'Sampling is the process of taking discrete measurements of the analog signal at regular time intervals.'
-            },
-            {
-                id: 'pcm-36', type: 'mcq', topic: 'PCM Sampling, Sampling Rate, Quantization, and Coding',
-                question: 'What is the purpose of an anti-aliasing filter in a PCM system?',
-                options: ['To smooth the digital signal after reconstruction.', 'To remove high-frequency components from the analog signal before sampling.', 'To reduce quantization noise.', 'To amplify the signal before encoding.'],
-                correctAnswer: 1, // b) To remove high-frequency components from the analog signal before sampling.
-                explanation: 'An anti-aliasing filter (a low-pass filter) ensures that the analog signal contains no frequencies above half the sampling rate, preventing aliasing.'
-            },
-            {
-                id: 'pcm-37', type: 'mcq', topic: 'PCM Sampling, Sampling Rate, Quantization, and Coding',
-                question: 'Which statement accurately describes the relationship between dynamic range and the number of bits in PCM?',
-                options: ['Dynamic range decreases linearly with the number of bits.', 'Dynamic range increases exponentially with the number of bits.', 'Dynamic range is independent of the number of bits.', 'Dynamic range increases approximately 6 dB for each additional bit.'],
-                correctAnswer: 3, // d) Dynamic range increases approximately 6 dB for each additional bit.
-                explanation: 'The dynamic range (in dB) for a linear PCM system is approximately 6.02 * N dB, where N is the number of bits.'
-            },
-            {
-                id: 'pcm-38', type: 'mcq', topic: 'PCM Sampling, Sampling Rate, Quantization, and Coding',
-                question: 'Why is it important to minimize idle channel noise?',
-                options: ['It reduces the overall system bandwidth.', 'It improves the clarity of silence or very low-level signals.', 'It makes the system more power-efficient.', 'It speeds up the encoding process.'],
-                correctAnswer: 1, // b) It improves the clarity of silence or very low-level signals.
-                explanation: 'High idle channel noise can be perceived as hiss or background hum during quiet periods, degrading the overall audio quality.'
-            },
-            {
-                id: 'pcm-39', type: 'mcq', topic: 'PCM Sampling, Sampling Rate, Quantization, and Coding',
-                question: 'In a digital companding scheme, the compression and expansion functions are implemented using:',
-                options: ['Analog filters', 'Digital signal processors (DSPs) or lookup tables', 'Mechanical switches', 'Optical fibers'],
-                correctAnswer: 1, // b) Digital signal processors (DSPs) or lookup tables
-                explanation: 'Digital companding relies on computational methods to apply the non-linear transformation to the digitized samples.'
-            },
-            {
-                id: 'pcm-40', type: 'mcq', topic: 'PCM Sampling, Sampling Rate, Quantization, and Coding',
-                question: 'What is a key advantage of PCM over analog modulation techniques?',
-                options: ['Requires less bandwidth.', 'More susceptible to noise.', 'Better noise immunity and easier regeneration.', 'Simpler to implement.'],
-                correctAnswer: 2, // c) Better noise immunity and easier regeneration.
-                explanation: 'Digital signals are more robust against noise; they can be regenerated (re-shaped and amplified) without accumulating noise, unlike analog signals.'
-            },
-            {
-                id: 'pcm-41', type: 'mcq', topic: 'PCM Sampling, Sampling Rate, Quantization, and Coding',
-                question: 'What is the typical sampling rate used for voice communication in telephony (PSTN)?',
-                options: ['4 kHz', '8 kHz', '16 kHz', '44.1 kHz'],
-                correctAnswer: 1, // b) 8 kHz
-                explanation: 'The standard sampling rate for voice in traditional telephony is 8 kHz, which covers the typical human voice frequency range up to 4 kHz.'
-            },
-            {
-                id: 'pcm-42', type: 'mcq', topic: 'PCM Sampling, Sampling Rate, Quantization, and Coding',
-                question: 'How many bits are typically used per sample for voice in a G.711 PCM system?',
-                options: ['4 bits', '6 bits', '8 bits', '16 bits'],
-                correctAnswer: 2, // c) 8 bits
-                explanation: 'G.711 specifies 8 bits per sample for both A-Law and U-Law companding.'
-            },
-            {
-                id: 'pcm-43', type: 'mcq', topic: 'PCM Sampling, Sampling Rate, Quantization, and Coding',
-                question: 'Which of the following is NOT a step in the PCM encoding process?',
-                options: ['Sampling', 'Quantization', 'Demodulation', 'Encoding (coding)'],
-                correctAnswer: 2, // c) Demodulation
-                explanation: 'Demodulation is part of the decoding or reconstruction process, not the encoding process.'
-            },
-            {
-                id: 'pcm-44', type: 'mcq', topic: 'PCM Sampling, Sampling Rate, Quantization, and Coding',
-                question: 'What is the maximum theoretical frequency that can be accurately represented if a signal is sampled at 40 kHz?',
-                options: ['10 kHz', '20 kHz', '40 kHz', '80 kHz'],
-                correctAnswer: 1, // b) 20 kHz
-                explanation: 'According to the Nyquist theorem, the maximum frequency is half the sampling rate, so 40 kHz / 2 = 20 kHz.'
-            },
-            {
-                id: 'pcm-45', type: 'mcq', topic: 'PCM Sampling, Sampling Rate, Quantization, and Coding',
-                question: 'The "coding" step in PCM refers to:',
-                options: ['Converting the analog signal to digital pulses.', 'Assigning a unique binary code to each quantization level.', 'Filtering out unwanted frequencies.', 'Amplifying the signal.'],
-                correctAnswer: 1, // b) Assigning a unique binary code to each quantization level.
-                explanation: 'After quantization, each discrete level is represented by a specific binary word or code.'
-            },
-            {
-                id: 'pcm-46', type: 'mcq', topic: 'PCM Sampling, Sampling Rate, Quantization, and Coding',
-                question: 'If the number of quantization levels is increased, what happens to the bandwidth requirement for transmitting the PCM signal?',
-                options: ['It decreases.', 'It increases.', 'It remains the same.', 'It becomes negligible.'],
-                correctAnswer: 1, // b) It increases.
-                explanation: 'Increasing the number of levels means more bits per sample, which directly increases the overall bit rate and thus the required bandwidth.'
-            },
-            {
-                id: 'pcm-47', type: 'mcq', topic: 'PCM Sampling, Sampling Rate, Quantization, and Coding',
-                question: 'What is the fundamental trade-off in PCM between bit rate and signal quality?',
-                options: ['Higher bit rate leads to lower quality.', 'Lower bit rate leads to higher quality.', 'Higher bit rate generally allows for higher signal quality (better SQNR).', 'Bit rate only affects transmission speed, not quality.'],
-                correctAnswer: 2, // c) Higher bit rate generally allows for higher signal quality (better SQNR).
-                explanation: 'A higher bit rate allows for either a higher sampling rate (reducing aliasing) or more bits per sample (reducing quantization noise), both contributing to better quality.'
-            },
-            {
-                id: 'pcm-48', type: 'mcq', topic: 'PCM Sampling, Sampling Rate, Quantization, and Coding',
-                question: 'The "compression" part of companding aims to:',
-                options: ['Expand the dynamic range of the signal.', 'Reduce the amplitude of high-level signals.', 'Increase the relative amplitude of low-level signals before quantization.', 'Flatten the signal\'s amplitude.'],
-                correctAnswer: 2, // c) Increase the relative amplitude of low-level signals before quantization.
-                explanation: 'Compression maps a larger range of input amplitudes to a smaller range, effectively giving more "attention" to quiet signals.'
-            },
-            {
-                id: 'pcm-49', type: 'mcq', topic: 'PCM Sampling, Sampling Rate, Quantization, and Coding',
-                question: 'Which of the following is a characteristic of A-Law companding compared to U-Law?',
-                options: ['A-Law uses a strictly logarithmic curve.', 'A-Law has a linear segment around zero.', 'A-Law provides a higher dynamic range for the same number of bits.', 'A-Law is more complex to implement.'],
-                correctAnswer: 1, // b) A-Law has a linear segment around zero.
-                explanation: 'A-Law has a small linear segment near zero to reduce distortion for very low-amplitude signals.'
-            },
-            {
-                id: 'pcm-50', type: 'mcq', topic: 'PCM Sampling, Sampling Rate, Quantization, and Coding',
-                question: 'What is the main advantage of using folded binary code over standard two\'s complement for PCM?',
-                options: ['Easier arithmetic operations.', 'More intuitive representation of positive and negative values for amplitude.', 'Reduces the number of bits required.', 'Better error detection capabilities.'],
-                correctAnswer: 1, // b) More intuitive representation of positive and negative values for amplitude.
-                explanation: 'Folded binary (sign-magnitude) directly represents the magnitude and then a separate bit for the sign, which can be more straightforward for amplitude mapping in some PCM implementations.'
-            },
-            {
-                id: 'pcm-51', type: 'mcq', topic: 'PCM Sampling, Sampling Rate, Quantization, and Coding',
-                question: 'If a PCM system has a dynamic range of 72 dB, approximately how many bits per sample are likely being used (assuming linear PCM)?',
-                options: ['8 bits', '10 bits', '12 bits', '14 bits'],
-                correctAnswer: 2, // c) 12 bits
-                explanation: 'Dynamic Range approximately 6 * N dB. So, 72 dB / 6 dB/bit = 12 bits.'
-            },
-            {
-                id: 'pcm-52', type: 'mcq', topic: 'PCM Sampling, Sampling Rate, Quantization, and Coding',
-                question: 'What is the impact of excessive idle channel noise on communication quality?',
-                options: ['It makes loud sounds sound louder.', 'It makes quiet sounds harder to hear clearly.', 'It increases the signal\'s bandwidth.', 'It causes signal distortion at high frequencies.'],
-                correctAnswer: 1, // b) It makes quiet sounds harder to hear clearly.
-                explanation: 'Idle channel noise masks low-level signals, making them difficult to distinguish from the noise floor.'
-            },
-            {
-                id: 'pcm-53', type: 'mcq', topic: 'PCM Sampling, Sampling Rate, Quantization, and Coding',
-                question: 'Which of the following describes the relationship between the number of quantization levels (L) and the number of bits (N) used in PCM?',
-                options: ['L = N', 'L = N^2', 'L = 2^N', 'L = log_2 N'],
-                correctAnswer: 2, // c) L = 2^N
-                explanation: 'Each bit can represent two states, so N bits can represent 2^N unique states or levels.'
-            },
-            {
-                id: 'pcm-54', type: 'mcq', topic: 'PCM Sampling, Sampling Rate, Quantization, and Coding',
-                question: 'The process of converting the discrete-time samples into a continuous-time signal involves using a:',
-                options: ['High-pass filter', 'Band-pass filter', 'Low-pass filter', 'Notch filter'],
-                correctAnswer: 2, // c) Low-pass filter
-                explanation: 'A low-pass filter reconstructs the original smooth analog waveform from the discrete samples by removing the high-frequency components introduced by the sampling process.'
-            },
-            {
-                id: 'pcm-55', type: 'mcq', topic: 'PCM Sampling, Sampling Rate, Quantization, and Coding',
-                question: 'If the peak-to-peak voltage of an analog signal is 10V and it is quantized into 256 levels, what is the step size (quantization interval)?',
-                options: ['10V', '0.1V', '0.039V', '0.005V'],
-                correctAnswer: 2, // c) 0.039V
-                explanation: 'Step size = Peak-to-peak voltage / Number of levels = 10 V / 256 approximately 0.039 V.'
-            },
-            {
-                id: 'pcm-56', type: 'mcq', topic: 'PCM Sampling, Sampling Rate, Quantization, and Coding',
-                question: 'Why is oversampling sometimes used in analog-to-digital conversion even if it exceeds the Nyquist rate?',
-                options: ['To reduce the number of bits per sample.', 'To simplify the anti-aliasing filter design.', 'To increase quantization noise.', 'To make the system more power-efficient.'],
-                correctAnswer: 1, // b) To simplify the anti-aliasing filter design.
-                explanation: 'Oversampling pushes the aliasing frequencies further away from the signal band, allowing for a simpler, less steep anti-aliasing filter.'
-            },
-            {
-                id: 'pcm-57', type: 'mcq', topic: 'PCM Sampling, Sampling Rate, Quantization, and Coding',
-                question: 'In the context of companding, the "expander" circuit performs the inverse operation of the "compressor" circuit. Where is the expander typically located?',
-                options: ['At the transmitter, before quantization.', 'At the receiver, after digital-to-analog conversion.', 'At the receiver, before digital-to-analog conversion.', 'At both the transmitter and receiver simultaneously.'],
-                correctAnswer: 2, // c) At the receiver, before digital-to-analog conversion.
-                explanation: 'The expander in the receiver reverses the compression applied at the transmitter, restoring the original dynamic range of the signal before it\'s converted back to analog.'
-            },
-            {
-                id: 'pcm-58', type: 'mcq', topic: 'PCM Sampling, Sampling Rate, Quantization, and Coding',
-                question: 'What does a higher "coding efficiency" imply for a PCM system?',
-                options: ['More bits are used to represent redundant information.', 'The data is transmitted at a slower rate.', 'The information is represented with fewer bits or more effectively per bit.', 'The system is less resilient to errors.'],
-                correctAnswer: 2, // c) The information is represented with fewer bits or more effectively per bit.
-                explanation: 'High coding efficiency means that the system is optimized to use as few bits as possible to convey the necessary information, reducing redundancy.'
-            },
-            {
-                id: 'pcm-59', type: 'mcq', topic: 'PCM Sampling, Sampling Rate, Quantization, and Coding',
-                question: 'Which of the following statements about linear vs. nonlinear PCM codes is true regarding their SQNR performance across different signal amplitudes?',
-                options: ['Linear codes have a constant SQNR across all signal amplitudes.', 'Nonlinear codes have a better SQNR for high-amplitude signals.', 'Nonlinear codes maintain a more constant SQNR across a wider range of signal amplitudes.', 'Linear codes are always superior in terms of SQNR.'],
-                correctAnswer: 2, // c) Nonlinear codes maintain a more constant SQNR across a wider range of signal amplitudes.
-                explanation: 'The main advantage of companding (nonlinear codes) is to normalize the SQNR, providing better performance for weaker signals without significantly degrading strong signals.'
-            },
-            {
-                id: 'pcm-60', type: 'mcq', topic: 'PCM Sampling, Sampling Rate, Quantization, and Coding',
-                question: 'What is the main reason for using a sample-and-hold circuit in a PCM system?',
-                options: ['To perform the quantization.', 'To convert the digital signal back to analog.', 'To keep the analog sample constant during the A/D conversion process.', 'To filter out high-frequency noise.'],
-                correctAnswer: 2, // c) To keep the analog sample constant during the A/D conversion process.
-                explanation: 'A sample-and-hold circuit takes an instantaneous sample of the analog signal and holds its value constant for the duration of the analog-to-digital conversion, ensuring accurate quantization.'
-            },
-            // Modified True or False Section - PCM Concepts (30 questions)
-            {
-                id: 'tf-pcm-1', type: 'tf', topic: 'True/False - PCM Concepts',
-                question: 'PCM primarily converts digital signals into analog signals.',
-                options: ['True', 'False'],
-                correctAnswer: 1, // False
-                explanation: 'Correction: PCM primarily converts analog signals into digital signals. Explanation: PCM is an analog-to-digital conversion technique, not the other way around.'
-            },
-            {
-                id: 'tf-pcm-2', type: 'tf', topic: 'True/False - PCM Concepts',
-                question: 'The Nyquist sampling rate requires the sampling frequency to be exactly equal to the highest frequency component of the signal.',
-                options: ['True', 'False'],
-                correctAnswer: 1, // False
-                explanation: 'Correction: The Nyquist sampling rate requires the sampling frequency to be at least twice the highest frequency component of the signal. Explanation: Sampling at exactly the highest frequency would not provide enough information to reconstruct the signal accurately.'
-            },
-            {
-                id: 'tf-pcm-3', type: 'tf', topic: 'True/False - PCM Concepts',
-                question: 'Aliasing occurs when the sampling rate is higher than the Nyquist rate.',
-                options: ['True', 'False'],
-                correctAnswer: 1, // False
-                explanation: 'Correction: Aliasing occurs when the sampling rate is lower than the Nyquist rate. Explanation: Insufficient sampling rate leads to spectral overlap and distortion known as aliasing.'
-            },
-            {
-                id: 'tf-pcm-4', type: 'tf', topic: 'PCM Sampling, Sampling Rate, Quantization, and Coding',
-                question: 'Quantization is the process of converting discrete-time samples into a series of binary codes.',
-                options: ['True', 'False'],
-                correctAnswer: 1, // False
-                explanation: 'Correction: Quantization is the process of converting continuous-amplitude samples into discrete amplitude levels. The subsequent step is encoding into binary codes. Explanation: Quantization rounds the sampled analog value to the nearest discrete level. Encoding then assigns a binary code to that level.'
-            },
-            {
-                id: 'tf-pcm-5', type: 'tf', topic: 'True/False - PCM Concepts',
-                question: 'Increasing the number of bits used for quantization decreases the quantization error.',
-                options: ['True', 'False'],
-                correctAnswer: 0, // True
-                explanation: 'More bits allow for finer quantization steps, leading to a more accurate representation of the analog signal and thus less error.'
-            },
-            {
-                id: 'tf-pcm-6', type: 'tf', topic: 'True/False - PCM Concepts',
-                question: 'The folded binary code is commonly used to represent only positive analog values in PCM.',
-                options: ['True', 'False'],
-                correctAnswer: 1, // False
-                explanation: 'Correction: The folded binary code is commonly used to represent both positive and negative analog values efficiently in PCM. Explanation: It uses a sign bit and a magnitude representation to cover the full range of amplitudes.'
-            },
-            {
-                id: 'tf-pcm-7', type: 'tf', topic: 'True/False - PCM Concepts',
-                question: 'Dynamic range is usually measured in Watts.',
-                options: ['True', 'False'],
-                correctAnswer: 1, // False
-                explanation: 'Correction: Dynamic range is usually measured in Decibels (dB). Explanation: Decibels provide a logarithmic scale suitable for expressing large ratios of power or amplitude.'
-            },
-            {
-                id: 'tf-pcm-8', type: 'tf', topic: 'True/False - PCM Concepts',
-                question: 'Coding efficiency describes how fast the PCM encoding process is.',
-                options: ['True', 'False'],
-                correctAnswer: 1, // False
-                explanation: 'Correction: Coding efficiency describes how effectively the available bits are used to represent information without redundancy. Explanation: It\'s about data compression and optimal bit usage, not processing speed.'
-            },
-            {
-                id: 'tf-pcm-9', type: 'tf', topic: 'True/False - PCM Concepts',
-                question: 'SQNR stands for Signal-to-Quantization Noise Ratio.',
-                options: ['True', 'False'],
-                correctAnswer: 0, // True
-                explanation: 'SQNR is a key metric for evaluating the quality of a quantized signal.'
-            },
-            {
-                id: 'tf-pcm-10', type: 'tf', topic: 'True/False - PCM Concepts',
-                question: 'Linear PCM codes use a varying step size for quantization, giving more detail to low-amplitude signals.',
-                options: ['True', 'False'],
-                correctAnswer: 1, // False
-                explanation: 'Correction: Linear PCM codes use a constant step size for quantization. Nonlinear codes use a varying step size. Explanation: The uniform spacing of levels is characteristic of linear PCM.'
-            },
-            {
-                id: 'tf-pcm-11', type: 'tf', topic: 'True/False - PCM Concepts',
-                question: 'Idle channel noise is only present when an active signal is being transmitted.',
-                options: ['True', 'False'],
-                correctAnswer: 1, // False
-                explanation: 'Correction: Idle channel noise is noise present when no signal is being transmitted (during silence). Explanation: It refers to the background noise floor of the system.'
-            },
-            {
-                id: 'tf-pcm-12', type: 'tf', topic: 'True/False - PCM Concepts',
-                question: 'Companding is used to increase the total number of bits per sample in a PCM system.',
-                options: ['True', 'False'],
-                correctAnswer: 1, // False
-                explanation: 'Correction: Companding is used to improve the Signal-to-Quantization Noise Ratio (SQNR) for low-amplitude signals without necessarily increasing the total number of bits per sample. Explanation: It redistributes quantization levels, not adds more bits.'
-            },
-            {
-                id: 'tf-pcm-13', type: 'tf', topic: 'True/False - PCM Concepts',
-                question: 'U-Law companding is primarily used in Europe.',
-                options: ['True', 'False'],
-                correctAnswer: 1, // False
-                explanation: 'Correction: A-Law companding is primarily used in Europe. U-Law is used in North America and Japan. Explanation: These are regional standards for digital telephony.'
-            },
-            {
-                id: 'tf-pcm-14', type: 'tf', topic: 'True/False - PCM Concepts',
-                question: 'Analog companding takes place after the A/D conversion.',
-                options: ['True', 'False'],
-                correctAnswer: 1, // False
-                explanation: 'Correction: Analog companding takes place before the A/D conversion, using analog circuits. Explanation: It modifies the analog signal before it is digitized.'
-            },
-            {
-                id: 'tf-pcm-15', type: 'tf', topic: 'True/False - PCM Concepts',
-                question: 'The G.711 standard defines PCM encoding for video signals.',
-                options: ['True', 'False'],
-                correctAnswer: 1, // False
-                explanation: 'Correction: The G.711 standard defines PCM encoding for voice frequencies (audio signals). Explanation: G.711 is specifically for telephony voice.'
-            },
-            {
-                id: 'tf-pcm-16', type: 'tf', topic: 'True/False - PCM Concepts',
-                question: 'A higher bit rate in PCM generally leads to lower signal quality.',
-                options: ['True', 'False'],
-                correctAnswer: 1, // False
-                explanation: 'Correction: A higher bit rate in PCM generally leads to higher signal quality. Explanation: More bits allow for more accurate representation (either higher sampling rate or more quantization levels).'
-            },
-            {
-                id: 'tf-pcm-17', type: 'tf', topic: 'True/False - PCM Concepts',
-                question: 'An anti-aliasing filter is a high-pass filter.',
-                options: ['True', 'False'],
-                correctAnswer: 1, // False
-                explanation: 'Correction: An anti-aliasing filter is a low-pass filter. Explanation: It removes high-frequency components that could cause aliasing.'
-            },
-            {
-                id: 'tf-pcm-18', type: 'tf', topic: 'True/False - PCM Concepts',
-                question: 'For every 3 dB increase in dynamic range, one more bit is added to the PCM word.',
-                options: ['True', 'False'],
-                correctAnswer: 1, // False
-                explanation: 'Correction: For every 6 dB increase in dynamic range, one more bit is added to the PCM word (approximately). Explanation: The relationship is closer to 6 dB per bit.'
-            },
-            {
-                id: 'tf-pcm-19', type: 'tf', topic: 'True/False - PCM Concepts',
-                question: 'The "coding" step in PCM involves converting continuous analog signals into discrete samples.',
-                options: ['True', 'False'],
-                correctAnswer: 1, // False
-                explanation: 'Correction: The "coding" step in PCM involves assigning a unique binary code to each discrete quantization level. The sampling step performs the continuous-to-discrete time conversion. Explanation: Coding happens after sampling and quantization.'
-            },
-            {
-                id: 'tf-pcm-20', type: 'tf', topic: 'True/False - PCM Concepts',
-                question: 'The primary benefit of companding is to eliminate all quantization noise.',
-                options: ['True', 'False'],
-                correctAnswer: 1, // False
-                explanation: 'Correction: The primary benefit of companding is to improve the effective Signal-to-Quantization Noise Ratio (SQNR) for low-amplitude signals, not to eliminate all quantization noise. Explanation: Quantization noise is inherent to the process; companding merely redistributes its impact.'
-            },
-            {
-                id: 'tf-pcm-21', type: 'tf', topic: 'True/False - PCM Concepts',
-                question: 'Digital companding is implemented using mathematical algorithms or lookup tables on the digitized samples.',
-                options: ['True', 'False'],
-                correctAnswer: 0, // True
-                explanation: 'Digital companding applies the non-linear transformation in the digital domain.'
-            },
-            {
-                id: 'tf-pcm-22', type: 'tf', topic: 'True/False - PCM Concepts',
-                question: 'The sample-and-hold circuit is responsible for the D/A conversion.',
-                options: ['True', 'False'],
-                correctAnswer: 1, // False
-                explanation: 'Correction: The sample-and-hold circuit is responsible for holding the analog sample constant during the A/D conversion process. The DAC performs D/A conversion. Explanation: It\'s a critical component in the ADC process.'
-            },
-            {
-                id: 'tf-pcm-23', type: 'tf', topic: 'True/False - PCM Concepts',
-                question: 'If an analog signal\'s maximum frequency is 10 kHz, a sampling rate of 15 kHz would be sufficient to avoid aliasing.',
-                options: ['True', 'False'],
-                correctAnswer: 1, // False
-                explanation: 'Correction: If an analog signal\'s maximum frequency is 10 kHz, a sampling rate of at least 20 kHz would be sufficient to avoid aliasing. 2 x 10 kHz = 20 kHz. Explanation: The Nyquist rate requires the sampling rate to be at least twice the maximum frequency.'
-            },
-            {
-                id: 'tf-pcm-24', type: 'tf', topic: 'True/False - PCM Concepts',
-                question: 'Linear PCM is well-suited for speech signals because speech has a narrow dynamic range.',
-                options: ['True', 'False'],
-                correctAnswer: 1, // False
-                explanation: 'Correction: Linear PCM is not well-suited for speech signals because speech has a wide dynamic range, necessitating companding. Explanation: Speech signals vary significantly in amplitude.'
-            },
-            {
-                id: 'tf-pcm-25', type: 'tf', topic: 'True/False - PCM Concepts',
-                question: 'The term "reconstruction" in PCM refers to the process of converting the digital signal back into its original analog form.',
-                options: ['True', 'False'],
-                correctAnswer: 0, // True
-                explanation: 'Reconstruction involves DAC and a low-pass filter to recreate the analog waveform.'
-            },
-            {
-                id: 'tf-pcm-26', type: 'tf', topic: 'True/False - PCM Concepts',
-                question: 'Increasing the sampling rate in PCM will always reduce quantization noise.',
-                options: ['True', 'False'],
-                correctAnswer: 1, // False
-                explanation: 'Correction: Increasing the sampling rate in PCM does not directly reduce quantization noise; it primarily helps to avoid aliasing and allows for easier filtering. Quantization noise is reduced by increasing the number of bits per sample. Explanation: Quantization noise is related to the step size, which depends on the number of bits, not the sampling frequency.'
-            },
-            {
-                id: 'tf-pcm-27', type: 'tf', topic: 'True/False - PCM Concepts',
-                question: 'A-Law companding has a purely logarithmic characteristic.',
-                options: ['True', 'False'],
-                correctAnswer: 1, // False
-                explanation: 'Correction: A-Law companding has a linear segment around zero and then a logarithmic characteristic. Explanation: This linear segment distinguishes it from the purely logarithmic U-Law curve.'
-            },
-            {
-                id: 'tf-pcm-28', type: 'tf', topic: 'True/False - PCM Concepts',
-                question: 'The bit rate of a PCM system is determined by the number of quantization levels and the dynamic range.',
-                options: ['True', 'False'],
-                correctAnswer: 1, // False
-                explanation: 'Correction: The bit rate of a PCM system is determined by the sampling rate and the number of bits per sample. Explanation: Bit rate = Sampling Rate * Bits per Sample.'
-            },
-            {
-                id: 'tf-pcm-29', type: 'tf', topic: 'True/False - PCM Concepts',
-                question: 'Companding effectively gives more quantization levels to high-amplitude signals.',
-                options: ['True', 'False'],
-                correctAnswer: 1, // False
-                explanation: 'Correction: Companding effectively gives more quantization levels to low-amplitude signals. Explanation: This is done to improve the SQNR for the more sensitive quiet parts of a signal.'
-            },
-            {
-                id: 'tf-pcm-30', type: 'tf', topic: 'True/False - PCM Concepts',
-                question: 'PCM systems are more susceptible to noise compared to analog modulation techniques.',
-                options: ['True', 'False'],
-                correctAnswer: 1, // False
-                explanation: 'Correction: PCM systems are less susceptible to noise compared to analog modulation techniques due to their digital nature and regeneration capabilities. Explanation: Digital signals can be perfectly regenerated, eliminating accumulated noise over long distances.'
-            },
-            // New MCQs - Digital Carriers & Multiplexing (40 questions)
-            {
-                id: 'dcm-1', type: 'mcq', topic: 'Digital Carriers & Multiplexing',
-                question: 'What is the primary purpose of T-carriers in telecommunications?',
-                options: ['To transmit analog signals over long distances.', 'To carry multiple digital signals over a single transmission medium.', 'To convert optical signals to electrical signals.', 'To amplify weak signals in a network.'],
-                correctAnswer: 1,
-                explanation: 'T-carriers are designed to multiplex multiple digital voice or data channels onto a single high-speed digital line.'
-            },
-            {
-                id: 'dcm-2', type: 'mcq', topic: 'Digital Carriers & Multiplexing',
-                question: 'Multiplexing is a technique that allows:',
-                options: ['Only one signal to be transmitted at a time.', 'Multiple signals to share a single communication channel.', 'Signals to be encrypted for secure transmission.', 'Analog signals to be converted into digital signals.'],
-                correctAnswer: 1,
-                explanation: 'Multiplexing is the process of combining multiple signals into a single signal over a shared medium.'
-            },
-            {
-                id: 'dcm-3', type: 'mcq', topic: 'Digital Carriers & Multiplexing',
-                question: 'In Time Division Multiplexing (TDM), how are multiple signals combined?',
-                options: ['By assigning different frequency bands to each signal.', 'By interleaving bits or samples from different signals in time.', 'By encoding signals with different modulation schemes.', 'By transmitting signals at different power levels.'],
-                correctAnswer: 1,
-                explanation: 'TDM works by dividing the available time into slots and assigning each slot to a different signal, allowing them to share the channel sequentially.'
-            },
-            {
-                id: 'dcm-4', type: 'mcq', topic: 'Digital Carriers & Multiplexing',
-                question: 'Which of the following is a characteristic of synchronous TDM?',
-                options: ['Time slots are allocated dynamically based on demand.', 'Each input has a dedicated time slot, regardless of whether it has data to send.', 'It is less efficient than asynchronous TDM.', 'It is primarily used for analog signals.'],
-                correctAnswer: 1,
-                explanation: 'In synchronous TDM, time slots are pre-assigned and fixed, meaning even inactive sources consume their allocated time slot.'
-            },
-            {
-                id: 'dcm-5', type: 'mcq', topic: 'Digital Carriers & Multiplexing',
-                question: 'What is the standard data rate for a T1 digital carrier in North America?',
-                options: ['64 kbps', '1.544 Mbps', '2.048 Mbps', '44.736 Mbps'],
-                correctAnswer: 1,
-                explanation: 'The T1 carrier transmits data at a rate of 1.544 megabits per second, which is the standard for North American digital hierarchy.'
-            },
-            {
-                id: 'dcm-6', type: 'mcq', topic: 'Digital Carriers & Multiplexing',
-                question: 'How many voice channels does a standard T1 line carry?',
-                options: ['12', '24', '30', '48'],
-                correctAnswer: 1,
-                explanation: 'A T1 line is designed to carry 24 digitized voice channels, each sampled at 8 kHz and quantized into 8-bit PCM samples.'
-            },
-            {
-                id: 'dcm-7', type: 'mcq', topic: 'Digital Carriers & Multiplexing',
-                question: 'What is the primary function of a D-type channel bank in a T1 system?',
-                options: ['To convert digital signals to analog signals.', 'To combine multiple analog voice signals into a single digital T1 stream.', 'To amplify the T1 signal for longer transmission.', 'To separate individual voice channels from a T1 stream.'],
-                correctAnswer: 1,
-                explanation: 'D-type channel banks perform the analog-to-digital conversion and multiplexing of 24 voice channels into a T1 signal.'
-            },
-            {
-                id: 'dcm-8', type: 'mcq', topic: 'Digital Carriers & Multiplexing',
-                question: 'How many T1 frames constitute a Superframe (SF) in the T-carrier system?',
-                options: ['12', '24', '30', '48'],
-                correctAnswer: 0,
-                explanation: 'A Superframe consists of 12 T1 frames, which include specific framing bits for synchronization and signaling.'
-            },
-            {
-                id: 'dcm-9', type: 'mcq', topic: 'Digital Carriers & Multiplexing',
-                question: 'What is the purpose of the robbed-bit signaling method used in Superframe format?',
-                options: ['To transmit data error correction codes.', 'To carry control and signaling information for each voice channel.', 'To increase the overall data rate of the T1 line.', 'To synchronize the TDM frames.'],
-                correctAnswer: 1,
-                explanation: 'Robbed-bit signaling uses the least significant bit of certain frames to convey signaling information (e.g., on-hook/off-hook) without a separate signaling channel.'
-            },
-            {
-                id: 'dcm-10', type: 'mcq', topic: 'Digital Carriers & Multiplexing',
-                question: 'What is a key advantage of the Extended Superframe (ESF) format over the Superframe (SF) format?',
-                options: ['It supports a higher number of voice channels.', 'It provides enhanced error detection and performance monitoring capabilities.', 'It simplifies the TDM framing structure.', 'It allows for dynamic bandwidth allocation.'],
-                correctAnswer: 1,
-                explanation: 'ESF uses a 24-frame superframe with dedicated bits for CRC-6 error checking and a data link for network management information.'
-            },
-            {
-                id: 'dcm-11', type: 'mcq', topic: 'Digital Carriers & Multiplexing',
-                question: 'How many T1 frames make up an Extended Superframe (ESF)?',
-                options: ['12', '24', '30', '48'],
-                correctAnswer: 1,
-                explanation: 'An ESF consists of 24 T1 frames, which allows for more robust framing and data link capabilities.'
-            },
-            {
-                id: 'dcm-12', type: 'mcq', topic: 'Digital Carriers & Multiplexing',
-                question: 'What is "Fractional T Carrier Service"?',
-                options: ['A service that allows customers to use only a portion of the available bandwidth on a T1 line.', 'A service that combines multiple T1 lines into a higher-speed carrier.', 'A service that uses analog signals instead of digital signals.', 'A service that provides dedicated internet access only.'],
-                correctAnswer: 0,
-                explanation: 'Fractional T1 allows customers to subscribe to a specific number of 64 kbps channels within a T1 line, rather than the entire 1.544 Mbps.'
-            },
-            {
-                id: 'dcm-13', type: 'mcq', topic: 'Digital Carriers & Multiplexing',
-                question: 'What is the lowest level of the North American Digital Hierarchy?',
-                options: ['DS0', 'T1', 'DS1', 'DS3'],
-                correctAnswer: 0,
-                explanation: 'DS0 (Digital Signal Level 0) represents a single 64 kbps voice channel, which is the fundamental building block.'
-            },
-            {
-                id: 'dcm-14', type: 'mcq', topic: 'Digital Carriers & Multiplexing',
-                question: 'How many DS1 (T1) signals are multiplexed to form a DS2 (T2) signal?',
-                options: ['2', '4', '6', '8'],
-                correctAnswer: 1,
-                explanation: 'Four DS1 signals are multiplexed together to create a DS2 signal, which operates at 6.312 Mbps.'
-            },
-            {
-                id: 'dcm-15', type: 'mcq', topic: 'Digital Carriers & Multiplexing',
-                question: 'Why is line coding necessary for digital T-carriers?',
-                options: ['To convert digital signals to analog signals.', 'To ensure proper clock recovery at the receiver and minimize DC wander.', 'To amplify the signal strength for long-distance transmission.', 'To encrypt the data for secure communication.'],
-                correctAnswer: 1,
-                explanation: 'Line coding schemes embed clocking information and prevent long strings of zeros or ones that could lead to DC wander and loss of synchronization.'
-            },
-            {
-                id: 'dcm-16', type: 'mcq', topic: 'Digital Carriers & Multiplexing',
-                question: 'Which line coding scheme is commonly used for T1 lines?',
-                options: ['Non-Return-to-Zero (NRZ)', 'Manchester', 'Bipolar with 8-Zero Substitution (B8ZS)', 'Differential Manchester'],
-                correctAnswer: 2,
-                explanation: 'B8ZS is widely used for T1 lines to guarantee a minimum pulse density for clock recovery by substituting eight consecutive zeros with a specific bipolar violation pattern.'
-            },
-            {
-                id: 'dcm-17', type: 'mcq', topic: 'Digital Carriers & Multiplexing',
-                question: 'What is a key characteristic of a bipolar line coding scheme (e.g., AMI)?',
-                options: ['All bits are represented by positive voltage levels.', 'Alternate marks (ones) have opposite polarities.', 'Zeros are represented by a change in voltage level.', 'It requires twice the bandwidth compared to NRZ.'],
-                correctAnswer: 1,
-                explanation: 'In bipolar schemes like AMI, a \'1\' is represented by alternating positive and negative pulses, while a \'0\' is represented by no pulse.'
-            },
-            {
-                id: 'dcm-18', type: 'mcq', topic: 'Digital Carriers & Multiplexing',
-                question: 'What is the main problem that B8ZS addresses in T1 transmission?',
-                options: ['Excessive DC components.', 'Loss of synchronization due to long strings of zeros.', 'High power consumption.', 'Interference from other signals.'],
-                correctAnswer: 1,
-                explanation: 'B8ZS introduces bipolar violations when eight consecutive zeros occur, ensuring sufficient transitions for clock recovery.'
-            },
-            {
-                id: 'dcm-19', type: 'mcq', topic: 'Digital Carriers & Multiplexing',
-                question: 'If a T1 line uses the AMI (Alternate Mark Inversion) line code, how would a long string of zeros affect clock recovery?',
-                options: ['It would improve clock recovery.', 'It would have no impact on clock recovery.', 'It could lead to a loss of clock synchronization.', 'It would increase the signal-to-noise ratio.'],
-                correctAnswer: 2,
-                explanation: 'AMI has no transitions for a string of zeros, making it difficult for the receiver to maintain synchronization.'
-            },
-            {
-                id: 'dcm-20', type: 'mcq', topic: 'Digital Carriers & Multiplexing',
-                question: 'Which of the following is a key component of a T1 carrier system?',
-                options: ['Analog filters for frequency separation.', 'Repeaters for signal regeneration.', 'Optical fibers for light transmission only.', 'Modems for converting digital to analog signals.'],
-                correctAnswer: 1,
-                explanation: 'Repeaters are essential in T-carrier systems to regenerate the digital signal at intervals, counteracting attenuation and distortion over distance.'
-            },
-            {
-                id: 'dcm-21', type: 'mcq', topic: 'Digital Carriers & Multiplexing',
-                question: 'What is the approximate data rate of a T2 carrier system?',
-                options: ['1.544 Mbps', '6.312 Mbps', '44.736 Mbps', '274.176 Mbps'],
-                correctAnswer: 1,
-                explanation: 'The T2 carrier is formed by multiplexing four T1 signals, resulting in a data rate of 6.312 Mbps.'
-            },
-            {
-                id: 'dcm-22', type: 'mcq', topic: 'Digital Carriers & Multiplexing',
-                question: 'How many T1 channels are typically carried by a T3 carrier system?',
-                options: ['24', '96', '672', '4032'],
-                correctAnswer: 2,
-                explanation: 'A T3 carrier is formed by multiplexing 28 T1 signals, meaning 28 * 24 = 672 voice channels.'
-            },
-            {
-                id: 'dcm-23', type: 'mcq', topic: 'Digital Carriers & Multiplexing',
-                question: 'What is the approximate data rate of a T3 carrier system?',
-                options: ['1.544 Mbps', '6.312 Mbps', '44.736 Mbps', '274.176 Mbps'],
-                correctAnswer: 2,
-                explanation: 'The T3 carrier operates at a data rate of 44.736 Mbps, making it a high-capacity digital link.'
-            },
-            {
-                id: 'dcm-24', type: 'mcq', topic: 'Digital Carriers & Multiplexing',
-                question: 'What is the primary characteristic of T4M and T5 carrier systems compared to T1, T2, and T3?',
-                options: ['They are designed for short-distance transmissions.', 'They offer lower data rates.', 'They are higher-level carriers in the North American Digital Hierarchy with significantly increased capacity.', 'They exclusively use coaxial cables for transmission.'],
-                correctAnswer: 2,
-                explanation: 'T4M and T5 represent even higher levels of the hierarchy, multiplexing many T3 signals to achieve very high data rates.'
-            },
-            {
-                id: 'dcm-25', type: 'mcq', topic: 'Digital Carriers & Multiplexing',
-                question: 'What is the approximate data rate for a T5 carrier system?',
-                options: ['44.736 Mbps', '274.176 Mbps', '400.352 Mbps', '560.16 Mbps'],
-                correctAnswer: 2,
-                explanation: 'The T5 carrier operates at 400.352 Mbps, demonstrating the hierarchical scaling of the T-carrier system.'
-            },
-            {
-                id: 'dcm-26', type: 'mcq', topic: 'Digital Carriers & Multiplexing',
-                question: 'What is the standard data rate for the E1 digital carrier in Europe?',
-                options: ['1.544 Mbps', '2.048 Mbps', '8.448 Mbps', '34.368 Mbps'],
-                correctAnswer: 1,
-                explanation: 'The E1 carrier is the European equivalent of the T1 carrier, but it operates at 2.048 Mbps.'
-            },
-            {
-                id: 'dcm-27', type: 'mcq', topic: 'Digital Carriers & Multiplexing',
-                question: 'How many voice channels does an E1 line typically carry?',
-                options: ['24', '30', '32', '48'],
-                correctAnswer: 1,
-                explanation: 'An E1 line carries 30 voice channels plus two additional channels for signaling and synchronization.'
-            },
-            {
-                id: 'dcm-28', type: 'mcq', topic: 'Digital Carriers & Multiplexing',
-                question: 'What is a key difference between the North American (T-carrier) and European (E-carrier) digital hierarchies?',
-                options: ['Only E-carriers use Time Division Multiplexing.', 'E-carriers use a different signaling method and higher data rates for their base unit.', 'T-carriers are designed for shorter distances.', 'E-carriers do not use line coding.'],
-                correctAnswer: 1,
-                explanation: 'E-carriers utilize a dedicated signaling channel rather than robbed-bit signaling, and the E1 base rate is higher than T1.'
-            },
-            {
-                id: 'dcm-29', type: 'mcq', topic: 'Digital Carriers & Multiplexing',
-                question: 'What is the purpose of frame synchronization in digital carrier systems?',
-                options: ['To encrypt the transmitted data.', 'To ensure the receiver correctly identifies the start and end of each TDM frame.', 'To amplify the digital signal.', 'To convert digital signals back to analog.'],
-                correctAnswer: 1,
-                explanation: 'Frame synchronization allows the receiver to align its frame structure with that of the transmitter, ensuring proper demultiplexing.'
-            },
-            {
-                id: 'dcm-30', type: 'mcq', topic: 'Digital Carriers & Multiplexing',
-                question: 'Which method is commonly used for frame synchronization in T-carrier systems?',
-                options: ['Spreading spectrum.', 'Using a dedicated framing bit pattern.', 'Frequency hopping.', 'Error correction codes.'],
-                correctAnswer: 1,
-                explanation: 'T-carrier systems use specific framing bits (e.g., F-bits in SF, ESF) that repeat in a known pattern, allowing the receiver to synchronize.'
-            },
-            {
-                id: 'dcm-31', type: 'mcq', topic: 'Digital Carriers & Multiplexing',
-                question: 'In bit interleaving, how are bits from different channels combined?',
-                options: ['Entire words from each channel are transmitted sequentially.', 'Bits from different channels are interleaved one bit at a time within a frame.', 'Channels are assigned different frequency bands.', 'Bits are transmitted in parallel.'],
-                correctAnswer: 1,
-                explanation: 'Bit interleaving means taking one bit from each channel in sequence to form the multiplexed stream.'
-            },
-            {
-                id: 'dcm-32', type: 'mcq', topic: 'Digital Carriers & Multiplexing',
-                question: 'When would word interleaving be more efficient than bit interleaving?',
-                options: ['When dealing with very low data rate channels.', 'When the data is organized into larger blocks or words.', 'When signal synchronization is critical.', 'When there are many channels with varying bit rates.'],
-                correctAnswer: 1,
-                explanation: 'Word interleaving is more suitable when data naturally comes in larger units, as it avoids the overhead of bit-by-bit switching.'
-            },
-            {
-                id: 'dcm-33', type: 'mcq', topic: 'Digital Carriers & Multiplexing',
-                question: 'What is a key characteristic of Statistical TDM (STDM)?',
-                options: ['It allocates fixed time slots to each input regardless of activity.', 'It dynamically allocates time slots based on the activity of the input channels.', 'It is less efficient than synchronous TDM.', 'It is primarily used for real-time voice communication.'],
-                correctAnswer: 1,
-                explanation: 'STDM, also known as asynchronous TDM, only allocates bandwidth to active channels, making it more efficient for bursty data traffic.'
-            },
-            {
-                id: 'dcm-34', type: 'mcq', topic: 'Digital Carriers & Multiplexing',
-                question: 'What is a potential drawback of Statistical TDM compared to synchronous TDM?',
-                options: ['Lower bandwidth utilization.', 'Increased latency and variable delays if the aggregate input rate exceeds the channel capacity.', 'Simpler implementation.', 'Inability to handle voice traffic.'],
-                correctAnswer: 1,
-                explanation: 'Since STDM relies on statistical averaging, periods of high demand can lead to queues and increased delays, unlike synchronous TDM\'s predictable timing.'
-            },
-            {
-                id: 'dcm-35', type: 'mcq', topic: 'Digital Carriers & Multiplexing',
-                question: 'What is the primary function of a CODEC (Coder-Decoder) in digital telecommunications?',
-                options: ['To amplify analog signals.', 'To convert analog signals to digital signals and vice-versa.', 'To encrypt digital data for secure transmission.', 'To perform frequency-division multiplexing.'],
-                correctAnswer: 1,
-                explanation: 'A CODEC digitizes analog signals (e.g., voice) for transmission and reconstructs them at the receiver.'
-            },
-            {
-                id: 'dcm-36', type: 'mcq', topic: 'Digital Carriers & Multiplexing',
-                question: 'What is a "combo chip" in the context of T-carrier systems?',
-                options: ['A chip that combines multiple T1 lines into a T3 line.', 'A single integrated circuit that includes both CODEC and filter functions for a voice channel.', 'A chip that performs only error detection and correction.', 'A chip that manages network routing.'],
-                correctAnswer: 1,
-                explanation: 'Combo chips integrate the analog-to-digital/digital-to-analog conversion, anti-aliasing filters, and reconstruction filters for a single channel, simplifying circuit design.'
-            },
-            {
-                id: 'dcm-37', type: 'mcq', topic: 'Digital Carriers & Multiplexing',
-                question: 'In Frequency-Division Multiplexing (FDM), how are multiple signals combined?',
-                options: ['By interleaving bits or samples from different signals in time.', 'By assigning different frequency bands to each signal.', 'By encoding signals with different modulation schemes.', 'By transmitting signals at different power levels.'],
-                correctAnswer: 1,
-                explanation: 'FDM allocates a unique range of frequencies (a sub-band) to each signal, allowing them to be transmitted simultaneously without interfering.'
-            },
-            {
-                id: 'dcm-38', type: 'mcq', topic: 'Digital Carriers & Multiplexing',
-                question: 'Which type of signals is FDM typically used for?',
-                options: ['Digital signals only.', 'Analog signals only.', 'Both analog and digital signals.', 'Optical signals only.'],
-                correctAnswer: 2,
-                explanation: 'While often associated with analog signals (like radio broadcasts), FDM can also be used for digital signals by modulating them onto different carrier frequencies.'
-            },
-            {
-                id: 'dcm-39', type: 'mcq', topic: 'Digital Carriers & Multiplexing',
-                question: 'What is the primary purpose of AT&T\'s FDM hierarchy?',
-                options: ['To define standards for digital signal transmission.', 'To combine multiple analog voice channels into higher-capacity analog groups.', 'To provide a framework for fiber optic communication.', 'To manage internet routing protocols.'],
-                correctAnswer: 1,
-                explanation: 'AT&T\'s FDM hierarchy defined a structured way to multiplex many analog voice channels into supergroups, mastergroups, etc., using different frequency bands.'
-            },
-            {
-                id: 'dcm-40', type: 'mcq', topic: 'Digital Carriers & Multiplexing',
-                question: 'How many voice channels typically form a "group" in AT&T\'s FDM hierarchy?',
-                options: ['4', '12', '24', '60'],
-                correctAnswer: 1,
-                explanation: 'A group in the FDM hierarchy typically consists of 12 voice channels, each occupying a 4 kHz bandwidth.'
-            },
-            {
-                id: 'dcm-41', type: 'mcq', topic: 'Digital Carriers & Multiplexing',
-                question: 'What is the main advantage of digital transmission over analog transmission in telecommunications?',
-                options: ['It is less susceptible to noise and distortion.', 'It requires less bandwidth.', 'It is easier to amplify without degradation.', 'It allows for simpler multiplexing.'],
-                correctAnswer: 0,
-                explanation: 'Digital signals can be regenerated at repeaters, removing accumulated noise and distortion, unlike analog signals which degrade with amplification.'
-            },
-            {
-                id: 'dcm-42', type: 'mcq', topic: 'Digital Carriers & Multiplexing',
-                question: 'What is the primary role of repeaters in a digital T-carrier system?',
-                options: ['To convert electrical signals to optical signals.', 'To amplify the signal without regeneration.', 'To regenerate the digital signal, removing noise and distortion.', 'To multiplex different digital signals.'],
-                correctAnswer: 2,
-                explanation: 'Repeaters detect the weakened, distorted digital signal and recreate a clean, strong version, extending the transmission distance.'
-            },
-            {
-                id: 'dcm-43', type: 'mcq', topic: 'Digital Carriers & Multiplexing',
-                question: 'Which of the following is NOT a characteristic of Time Division Multiplexing (TDM)?',
-                options: ['Signals share the channel sequentially in time.', 'Requires precise synchronization between transmitter and receiver.', 'Each channel is assigned a unique frequency band.', 'Can be used for both voice and data.'],
-                correctAnswer: 2,
-                explanation: 'Assigning unique frequency bands is characteristic of Frequency Division Multiplexing (FDM), not TDM.'
-            },
-            {
-                id: 'dcm-44', type: 'mcq', topic: 'Digital Carriers & Multiplexing',
-                question: 'What is the standard sampling rate for pulse code modulation (PCM) of a voice signal?',
-                options: ['4 kHz', '8 kHz', '16 kHz', '32 kHz'],
-                correctAnswer: 1,
-                explanation: 'According to the Nyquist theorem, a signal with a bandwidth of 4 kHz (typical for voice) needs to be sampled at least twice its highest frequency, so 8 kHz.'
-            },
-            {
-                id: 'dcm-45', type: 'mcq', topic: 'Digital Carriers & Multiplexing',
-                question: 'How many bits are typically used to quantize a single voice sample in PCM?',
-                options: ['4 bits', '8 bits', '16 bits', '32 bits'],
-                correctAnswer: 1,
-                explanation: '8-bit PCM is commonly used for voice to provide a sufficient dynamic range and signal-to-noise ratio.'
-            },
-            {
-                id: 'dcm-46', type: 'mcq', topic: 'Digital Carriers & Multiplexing',
-                question: 'What is the bit rate of a single digitized voice channel using 8 kHz sampling and 8-bit PCM?',
-                options: ['32 kbps', '64 kbps', '128 kbps', '256 kbps'],
-                correctAnswer: 1,
-                explanation: '8,000 samples/second * 8 bits/sample = 64,000 bits/second (64 kbps).'
-            },
-            {
-                id: 'dcm-47', type: 'mcq', topic: 'Digital Carriers & Multiplexing',
-                question: 'In the context of digital carriers, what does "DS0" represent?',
-                options: ['Digital Signal Level 1.', 'The basic digital channel for a single voice signal.', 'A specific type of multiplexer.', 'The highest level of the digital hierarchy.'],
-                correctAnswer: 1,
-                explanation: 'DS0 (Digital Signal Level 0) is the fundamental 64 kbps digital voice channel.'
-            },
-            {
-                id: 'dcm-48', type: 'mcq', topic: 'Digital Carriers & Multiplexing',
-                question: 'What is the primary function of a "Channel Bank"?',
-                options: ['To store large amounts of digital data.', 'To multiplex multiple lower-speed channels into a higher-speed digital stream.', 'To provide power to telecommunication equipment.', 'To amplify optical signals.'],
-                correctAnswer: 1,
-                explanation: 'Channel banks combine individual voice (or data) channels into a higher-rate digital signal, like a T1.'
-            },
-            {
-                id: 'dcm-49', type: 'mcq', topic: 'Digital Carriers & Multiplexing',
-                question: 'Which of the following best describes the "Extended Superframe (ESF)" format\'s advantage in terms of maintenance?',
-                options: ['It eliminates the need for any maintenance.', 'It allows for in-service performance monitoring and diagnostics without interrupting traffic.', 'It requires more frequent manual inspections.', 'It only supports out-of-service testing.'],
-                correctAnswer: 1,
-                explanation: 'ESF\'s data link channel enables continuous monitoring of line performance, error rates, and alarm conditions without taking the circuit out of service.'
-            },
-            {
-                id: 'dcm-50', type: 'mcq', topic: 'Digital Carriers & Multiplexing',
-                question: 'What is a "bipolar violation" in line coding?',
-                options: ['When two consecutive positive pulses occur.', 'When a sequence of zeros exceeds a certain length.', 'When two consecutive pulses have the same polarity, intentionally violating the AMI rule.', 'When the signal amplitude is too low.'],
-                correctAnswer: 2,
-                explanation: 'Bipolar violations are intentional deviations from the alternating polarity rule of AMI, used in schemes like B8ZS to break up strings of zeros for synchronization.'
-            },
-            {
-                id: 'dcm-51', type: 'mcq', topic: 'Digital Carriers & Multiplexing',
-                question: 'How does the European digital hierarchy (E-carrier) primarily differ from the North American (T-carrier) hierarchy in terms of base channel count?',
-                options: ['E-carriers use fewer voice channels per base unit.', 'E-carriers use more voice channels per base unit.', 'Both use the same number of voice channels but at different data rates.', 'E-carriers do not support voice channels.'],
-                correctAnswer: 1,
-                explanation: 'The E1 base unit carries 30 voice channels (plus 2 signaling/synchronization channels), while T1 carries 24.'
-            },
-            {
-                id: 'dcm-52', type: 'mcq', topic: 'Digital Carriers & Multiplexing',
-                question: 'In Statistical TDM, what mechanism is used to identify the source of each time slot\'s data?',
-                options: ['Fixed time slot assignments.', 'Channel-specific frequency bands.', 'Address information included with the data in each slot.', 'Unique modulation schemes.'],
-                correctAnswer: 2,
-                explanation: 'Since time slots are not fixed in STDM, each data burst typically includes a header with address information to identify the source channel.'
-            },
-            {
-                id: 'dcm-53', type: 'mcq', topic: 'Digital Carriers & Multiplexing',
-                question: 'What is the primary advantage of Fractional T-Carrier Service for a customer?',
-                options: ['Higher total bandwidth than a full T1.', 'Lower cost compared to a full T1 if less bandwidth is needed.', 'Enhanced security features.', 'Faster installation times.'],
-                correctAnswer: 1,
-                explanation: 'Customers can pay for only the specific number of DS0 channels they require, which is more cost-effective than leasing an entire T1.'
-            },
-            {
-                id: 'dcm-54', type: 'mcq', topic: 'Digital Carriers & Multiplexing',
-                question: 'Which of the following is an example of an application for Frequency Division Multiplexing (FDM)?',
-                options: ['Ethernet local area networks.', 'Cable television systems.', 'Point-to-point fiber optic links.', 'Digital voice over IP.'],
-                correctAnswer: 1,
-                explanation: 'Cable TV uses FDM to transmit multiple channels simultaneously over a single coaxial cable, each on a different frequency.'
-            },
-            {
-                id: 'dcm-55', type: 'mcq', topic: 'Digital Carriers & Multiplexing',
-                question: 'If a T1 system uses robbed-bit signaling, what is a potential consequence for voice quality?',
-                options: ['It significantly degrades voice clarity.', 'It can introduce very slight, imperceptible degradation in voice quality.', 'It enhances voice quality by reducing noise.', 'It has no effect on voice quality.'],
-                correctAnswer: 1,
-                explanation: 'By "robbing" the least significant bit, there\'s a slight reduction in the quantization levels for some samples, but it\'s generally imperceptible to human hearing.'
-            },
-            {
-                id: 'dcm-56', type: 'mcq', topic: 'Digital Carriers & Multiplexing',
-                question: 'What is the role of filters in a CODEC chip?',
-                options: ['To amplify the signal.', 'To convert digital to analog signals.', 'To perform anti-aliasing before sampling and smoothing after D/A conversion.', 'To encrypt the data.'],
-                correctAnswer: 2,
-                explanation: 'Analog filters prevent aliasing during sampling and reconstruct a smooth analog waveform after digital-to-analog conversion.'
-            },
-            {
-                id: 'dcm-57', type: 'mcq', topic: 'Digital Carriers & Multiplexing',
-                question: 'Why is DC wander a concern in digital line encoding?',
-                options: ['It increases the signal\'s bandwidth.', 'It makes clock recovery difficult and can shift the decision threshold for detecting bits.', 'It causes the signal to lose power rapidly.', 'It interferes with other signals on the same line.'],
-                correctAnswer: 1,
-                explanation: 'Long sequences of the same voltage level cause the average voltage (DC component) to drift, making it harder for the receiver to distinguish between bits and maintain synchronization.'
-            },
-            {
-                id: 'dcm-58', type: 'mcq', topic: 'Digital Carriers & Multiplexing',
-                question: 'What is the key advantage of the North American Digital Hierarchy\'s structure?',
-                options: ['It allows for direct connection of analog phones without conversion.', 'It provides a standardized and scalable way to combine lower-speed digital signals into higher-speed ones.', 'It is exclusively designed for wireless communication.', 'It eliminates the need for any form of multiplexing.'],
-                correctAnswer: 1,
-                explanation: 'The hierarchical structure (DS0 to DS1, DS1 to DS2, etc.) allows for efficient and compatible scaling of network capacity.'
-            },
-            {
-                id: 'dcm-59', type: 'mcq', topic: 'Digital Carriers & Multiplexing',
-                question: 'Which type of multiplexing is more suitable for real-time voice communication due to its predictable timing?',
-                options: ['Statistical Time Division Multiplexing (STDM)', 'Frequency Division Multiplexing (FDM)', 'Synchronous Time Division Multiplexing (TDM)', 'Wavelength Division Multiplexing (WDM)'],
-                correctAnswer: 2,
-                explanation: 'Synchronous TDM\'s fixed time slots ensure consistent delay and no queuing, which is crucial for real-time applications like voice where variable delays are undesirable.'
-            },
-            {
-                id: 'dcm-60', type: 'mcq', topic: 'Digital Carriers & Multiplexing',
-                question: 'What is the primary function of a multiplexer in general?',
-                options: ['To convert electrical signals to optical signals.', 'To combine multiple input signals into a single output signal.', 'To separate a single input signal into multiple output signals.', 'To regenerate a degraded signal.'],
-                correctAnswer: 1,
-                explanation: 'A multiplexer (or MUX) performs the combining function, while a demultiplexer (DEMUX) performs the separation.'
-            },
-            // New True/False Section - Digital Carriers & Multiplexing (30 questions)
-            {
-                id: 'tf-dcm-1', type: 'tf', topic: 'True/False - Digital Carriers & Multiplexing',
-                question: 'Digital T-carriers are primarily used for transmitting analog signals over long distances.',
-                options: ['True', 'False'],
-                correctAnswer: 1, // False
-                explanation: 'Correction: Digital T-carriers are primarily used for transmitting digital signals over long distances. Explanation: T-carriers were developed to efficiently carry multiple digital voice and data streams.'
-            },
-            {
-                id: 'tf-dcm-2', type: 'tf', topic: 'True/False - Digital Carriers & Multiplexing',
-                question: 'In Time Division Multiplexing (TDM), signals are combined by assigning each signal a different frequency band.',
-                options: ['True', 'False'],
-                correctAnswer: 1, // False
-                explanation: 'Correction: In Time Division Multiplexing (TDM), signals are combined by interleaving bits or samples from different signals in time. Explanation: FDM uses different frequency bands; TDM uses different time slots.'
-            },
-            {
-                id: 'tf-dcm-3', type: 'tf', topic: 'True/False - Digital Carriers & Multiplexing',
-                question: 'The standard data rate for a North American T1 digital carrier is 2.048 Mbps.',
-                options: ['True', 'False'],
-                correctAnswer: 1, // False
-                explanation: 'Correction: The standard data rate for a North American T1 digital carrier is 1.544 Mbps. Explanation: 2.048 Mbps is the standard rate for the European E1 carrier.'
-            },
-            {
-                id: 'tf-dcm-4', type: 'tf', topic: 'True/False - Digital Carriers & Multiplexing',
-                question: 'A standard T1 line typically carries 30 digitized voice channels.',
-                options: ['True', 'False'],
-                correctAnswer: 1, // False
-                explanation: 'Correction: A standard T1 line typically carries 24 digitized voice channels. Explanation: 30 voice channels are carried by an E1 line.'
-            },
-            {
-                id: 'tf-dcm-5', type: 'tf', topic: 'True/False - Digital Carriers & Multiplexing',
-                question: 'D-type channel banks are used to separate individual voice channels from a digital T1 stream.',
-                options: ['True', 'False'],
-                correctAnswer: 1, // False
-                explanation: 'Correction: D-type channel banks are used to combine multiple analog voice signals into a single digital T1 stream. Explanation: Channel banks perform the initial analog-to-digital conversion and multiplexing.'
-            },
-            {
-                id: 'tf-dcm-6', type: 'tf', topic: 'True/False - Digital Carriers & Multiplexing',
-                question: 'A Superframe (SF) in the T-carrier system consists of 24 T1 frames.',
-                options: ['True', 'False'],
-                correctAnswer: 1, // False
-                explanation: 'Correction: A Superframe (SF) in the T-carrier system consists of 12 T1 frames. Explanation: An Extended Superframe (ESF) consists of 24 T1 frames.'
-            },
-            {
-                id: 'tf-dcm-7', type: 'tf', topic: 'True/False - Digital Carriers & Multiplexing',
-                question: 'Robbed-bit signaling in Superframe format primarily aims to increase the overall data rate of the T1 line.',
-                options: ['True', 'False'],
-                correctAnswer: 1, // False
-                explanation: 'Correction: Robbed-bit signaling in Superframe format primarily aims to carry control and signaling information for each voice channel. Explanation: It uses existing bits for signaling, not to increase the data rate.'
-            },
-            {
-                id: 'tf-dcm-8', type: 'tf', topic: 'True/False - Digital Carriers & Multiplexing',
-                question: 'The Extended Superframe (ESF) format provides enhanced error detection and performance monitoring capabilities compared to Superframe (SF).',
-                options: ['True', 'False'],
-                correctAnswer: 0, // True
-                explanation: 'ESF includes CRC-6 for error checking and a data link for in-service performance monitoring.'
-            },
-            {
-                id: 'tf-dcm-9', type: 'tf', topic: 'True/False - Digital Carriers & Multiplexing',
-                question: 'Fractional T Carrier Service means combining multiple T1 lines into a higher-speed carrier.',
-                options: ['True', 'False'],
-                correctAnswer: 1, // False
-                explanation: 'Correction: Fractional T Carrier Service means allowing customers to use only a portion of the available bandwidth on a T1 line. Explanation: It provides a subset of the 24 DS0 channels.'
-            },
-            {
-                id: 'tf-dcm-10', type: 'tf', topic: 'True/False - Digital Carriers & Multiplexing',
-                question: 'DS0 is the highest level of the North American Digital Hierarchy.',
-                options: ['True', 'False'],
-                correctAnswer: 1, // False
-                explanation: 'Correction: DS0 is the lowest level of the North American Digital Hierarchy. Explanation: DS0 represents a single 64 kbps voice channel, which is the basic building block.'
-            },
-            {
-                id: 'tf-dcm-11', type: 'tf', topic: 'True/False - Digital Carriers & Multiplexing',
-                question: 'Four DS1 (T1) signals are multiplexed to form a DS3 (T3) signal.',
-                options: ['True', 'False'],
-                correctAnswer: 1, // False
-                explanation: 'Correction: Four DS1 (T1) signals are multiplexed to form a DS2 (T2) signal. Explanation: A DS3 signal is formed from 28 DS1s.'
-            },
-            {
-                id: 'tf-dcm-12', type: 'tf', topic: 'True/False - Digital Carriers & Multiplexing',
-                question: 'Line coding is necessary to convert digital signals to analog signals for transmission.',
-                options: ['True', 'False'],
-                correctAnswer: 1, // False
-                explanation: 'Correction: Line coding is necessary to ensure proper clock recovery at the receiver and minimize DC wander for digital signals. Explanation: It shapes the digital signal for efficient transmission over physical media, not converts it to analog.'
-            },
-            {
-                id: 'tf-dcm-13', type: 'tf', topic: 'True/False - Digital Carriers & Multiplexing',
-                question: 'Bipolar with 8-Zero Substitution (B8ZS) is commonly used for T1 lines to address issues with long strings of ones.',
-                options: ['True', 'False'],
-                correctAnswer: 1, // False
-                explanation: 'Correction: Bipolar with 8-Zero Substitution (B8ZS) is commonly used for T1 lines to address issues with long strings of zeros. Explanation: It introduces bipolar violations to ensure sufficient transitions for clock recovery even with many consecutive zeros.'
-            },
-            {
-                id: 'tf-dcm-14', type: 'tf', topic: 'True/False - Digital Carriers & Multiplexing',
-                question: 'The approximate data rate of a T3 carrier system is 6.312 Mbps.',
-                options: ['True', 'False'],
-                correctAnswer: 1, // False
-                explanation: 'Correction: The approximate data rate of a T3 carrier system is 44.736 Mbps. Explanation: 6.312 Mbps is the data rate for a T2 carrier.'
-            },
-            {
-                id: 'tf-dcm-15', type: 'tf', topic: 'True/False - Digital Carriers & Multiplexing',
-                question: 'T2 carrier systems carry more voice channels than T3 carrier systems.',
-                options: ['True', 'False'],
-                correctAnswer: 1, // False
-                explanation: 'Correction: T3 carrier systems carry more voice channels than T2 carrier systems. Explanation: T3 is a higher level in the hierarchy, designed for greater capacity.'
-            },
-            {
-                id: 'tf-dcm-16', type: 'tf', topic: 'True/False - Digital Carriers & Multiplexing',
-                question: 'The standard data rate for the E1 digital carrier in Europe is 1.544 Mbps.',
-                options: ['True', 'False'],
-                correctAnswer: 1, // False
-                explanation: 'Correction: The standard data rate for the E1 digital carrier in Europe is 2.048 Mbps. Explanation: 1.544 Mbps is the North American T1 standard.'
-            },
-            {
-                id: 'tf-dcm-17', type: 'tf', topic: 'True/False - Digital Carriers & Multiplexing',
-                question: 'An E1 line typically carries 24 voice channels.',
-                options: ['True', 'False'],
-                correctAnswer: 1, // False
-                explanation: 'Correction: An E1 line typically carries 30 voice channels (plus 2 signaling/synchronization channels). Explanation: T1 carries 24, E1 carries 30.'
-            },
-            {
-                id: 'tf-dcm-18', type: 'tf', topic: 'True/False - Digital Carriers & Multiplexing',
-                question: 'Frame synchronization in digital carrier systems ensures the encryption of transmitted data.',
-                options: ['True', 'False'],
-                correctAnswer: 1, // False
-                explanation: 'Correction: Frame synchronization in digital carrier systems ensures the receiver correctly identifies the start and end of each TDM frame. Explanation: Frame synchronization is about aligning the data stream for proper demultiplexing, not encryption.'
-            },
-            {
-                id: 'tf-dcm-19', type: 'tf', topic: 'True/False - Digital Carriers & Multiplexing',
-                question: 'In bit interleaving, entire words from each channel are transmitted sequentially.',
-                options: ['True', 'False'],
-                correctAnswer: 1, // False
-                explanation: 'Correction: In bit interleaving, bits from different channels are interleaved one bit at a time within a frame. Explanation: Word interleaving transmits entire words sequentially.'
-            },
-            {
-                id: 'tf-dcm-20', type: 'tf', topic: 'True/False - Digital Carriers & Multiplexing',
-                question: 'Statistical TDM allocates fixed time slots to each input regardless of activity.',
-                options: ['True', 'False'],
-                correctAnswer: 1, // False
-                explanation: 'Correction: Statistical TDM dynamically allocates time slots based on the activity of the input channels. Explanation: This dynamic allocation is what makes STDM more efficient for bursty traffic.'
-            },
-            {
-                id: 'tf-dcm-21', type: 'tf', topic: 'True/False - Digital Carriers & Multiplexing',
-                question: 'A potential drawback of Statistical TDM is increased latency and variable delays if the aggregate input rate exceeds the channel capacity.',
-                options: ['True', 'False'],
-                correctAnswer: 0, // True
-                explanation: 'Because STDM relies on statistical multiplexing, congestion can lead to queuing delays.'
-            },
-            {
-                id: 'tf-dcm-22', type: 'tf', topic: 'True/False - Digital Carriers & Multiplexing',
-                question: 'A CODEC\'s primary function is to amplify analog signals.',
-                options: ['True', 'False'],
-                correctAnswer: 1, // False
-                explanation: 'Correction: A CODEC\'s primary function is to convert analog signals to digital signals and vice-versa. Explanation: CODECs are essential for digitizing voice and other analog signals.'
-            },
-            {
-                id: 'tf-dcm-23', type: 'tf', topic: 'True/False - Digital Carriers & Multiplexing',
-                question: 'In Frequency-Division Multiplexing (FDM), signals are combined by interleaving bits from different signals in time.',
-                options: ['True', 'False'],
-                correctAnswer: 1, // False
-                explanation: 'Correction: In Frequency-Division Multiplexing (FDM), signals are combined by assigning different frequency bands to each signal. Explanation: This is the defining characteristic of FDM.'
-            },
-            {
-                id: 'tf-dcm-24', type: 'tf', topic: 'True/False - Digital Carriers & Multiplexing',
-                question: 'AT&T\'s FDM hierarchy was designed to combine multiple digital signals into higher-capacity digital groups.',
-                options: ['True', 'False'],
-                correctAnswer: 1, // False
-                explanation: 'Correction: AT&T\'s FDM hierarchy was designed to combine multiple analog voice channels into higher-capacity analog groups. Explanation: The FDM hierarchy predates widespread digital transmission and focused on analog voice multiplexing.'
-            },
-            {
-                id: 'tf-dcm-25', type: 'tf', topic: 'True/False - Digital Carriers & Multiplexing',
-                question: 'The primary advantage of digital transmission over analog transmission is that it requires less bandwidth.',
-                options: ['True', 'False'],
-                correctAnswer: 1, // False
-                explanation: 'Correction: The primary advantage of digital transmission over analog transmission is that it is less susceptible to noise and distortion. Explanation: Digital signals often require more bandwidth than their analog counterparts, but they maintain signal integrity better over distance.'
-            },
-            {
-                id: 'tf-dcm-26', type: 'tf', topic: 'True/False - Digital Carriers & Multiplexing',
-                question: 'Repeaters in a digital T-carrier system only amplify the signal without regenerating it.',
-                options: ['True', 'False'],
-                correctAnswer: 1, // False
-                explanation: 'Correction: Repeaters in a digital T-carrier system regenerate the digital signal, removing noise and distortion. Explanation: Signal regeneration is a key advantage of digital systems.'
-            },
-            {
-                id: 'tf-dcm-27', type: 'tf', topic: 'True/False - Digital Carriers & Multiplexing',
-                question: 'The standard sampling rate for pulse code modulation (PCM) of a voice signal is 4 kHz.',
-                options: ['True', 'False'],
-                correctAnswer: 1, // False
-                explanation: 'Correction: The standard sampling rate for pulse code modulation (PCM) of a voice signal is 8 kHz. Explanation: This is based on the Nyquist theorem for a 4 kHz voice bandwidth.'
-            },
-            {
-                id: 'tf-dcm-28', type: 'tf', topic: 'True/False - Digital Carriers & Multiplexing',
-                question: 'A "combo chip" integrates only the CODEC function for a voice channel.',
-                options: ['True', 'False'],
-                correctAnswer: 1, // False
-                explanation: 'Correction: A "combo chip" integrates both CODEC and filter functions for a voice channel. Explanation: These chips combine multiple functions to simplify design and reduce component count.'
-            },
-            {
-                id: 'tf-dcm-29', type: 'tf', topic: 'True/False - Digital Carriers & Multiplexing',
-                question: 'Bipolar violations are accidental errors that occur during digital transmission.',
-                options: ['True', 'False'],
-                correctAnswer: 1, // False
-                explanation: 'Correction: Bipolar violations are intentional deviations from the AMI rule, used in schemes like B8ZS to ensure clock recovery. Explanation: They are purposefully introduced to break up sequences of zeros.'
-            },
-            {
-                id: 'tf-dcm-30', type: 'tf', topic: 'True/False - Digital Carriers & Multiplexing',
-                question: 'Synchronous TDM is generally more suitable for bursty data traffic than Statistical TDM.',
-                options: ['True', 'False'],
-                correctAnswer: 1, // False
-                explanation: 'Correction: Statistical TDM is generally more suitable for bursty data traffic than Synchronous TDM. Explanation: STDM\'s dynamic allocation makes it more efficient for variable-rate, bursty data. Synchronous TDM is better for constant-rate, real-time traffic.'
+                question: "The thermostat system is an example of:",
+                options: ["Positive feedback loop", "Negative feedback loop", "Open-loop system", "Disturbance rejection only"],
+                correct: 1,
+                explanation: "It counters deviations by adjusting heating/cooling (negative feedback)."
             }
         ];
+        // ===== END QUIZ DATA =====
 
-        // Global State Variables
-        let state = {
-            score: 0,
-            currentQuestionIndex: 0,
-            activeTab: '', // Stores the current active tab's topic
-            filteredQuestions: [], // Questions for the currently active tab
-            answerLocked: false // Prevents changing answer after selection
-        };
+        let currentQuestion = 0;
+        let score = 0;
+        let answered = false;
 
-        // DOM Elements
-        const scoreDisplay = document.getElementById('score');
-        const currentQNumDisplay = document.getElementById('current-q-num');
-        const totalQNumDisplay = document.getElementById('total-q-num');
-        const progressBar = document.getElementById('progress-bar');
-        const quizTabsContainer = document.getElementById('quiz-tabs');
-        const questionText = document.getElementById('question-text');
-        const optionsContainer = document.getElementById('options-container');
-        const explanationContainer = document.getElementById('explanation-container');
-        const explanationText = document.getElementById('explanation-text');
-        const nextButton = document.getElementById('next-button');
-
-        /**
-         * Initializes the quiz application.
-         * Sets up tabs, loads the initial question, and updates UI.
-         */
-        function initializeApp() {
-            renderTabs();
-            // Set initial active tab to the first unique topic found
-            if (quizData.length > 0) {
-                const firstTopic = quizData[0].topic;
-                // Ensure the tab button gets the 'active' class
-                const initialTabButton = document.querySelector(`.tab-button[data-topic="${firstTopic}"]`);
-                if (initialTabButton) {
-                    initialTabButton.classList.add('active');
-                }
-                switchTab(firstTopic); // This will also call renderQuestion()
-            }
-
-            nextButton.addEventListener('click', handleNextClick);
+        function initializeQuiz() {
+            currentQuestion = 0;
+            score = 0;
+            answered = false;
+            updateProgress();
+            updateScore();
+            showQuestion();
+            document.getElementById('results-container').classList.add('hidden');
+            document.getElementById('quiz-container').classList.remove('hidden');
         }
 
-        /**
-         * Renders the tab navigation buttons based on unique topics in quizData.
-         */
-        function renderTabs() {
-            quizTabsContainer.innerHTML = ''; // Clear existing tabs
-            const uniqueTopics = [...new Set(quizData.map(q => q.topic))]; // Get unique topics
-
-            uniqueTopics.forEach(topic => {
-                const tabButton = document.createElement('button');
-                tabButton.classList.add('tab-button');
-                tabButton.textContent = topic;
-                tabButton.dataset.topic = topic; // Store topic in data attribute
-                tabButton.addEventListener('click', () => switchTab(topic));
-                quizTabsContainer.appendChild(tabButton);
-            });
-        }
-
-        /**
-         * Switches the active quiz tab and filters questions accordingly.
-         * @param {string} topic The topic of the tab to switch to.
-         */
-        function switchTab(topic) {
-            // Update active tab styling
-            document.querySelectorAll('.tab-button').forEach(button => {
-                button.classList.remove('active');
-            });
-            const activeTabButton = document.querySelector(`.tab-button[data-topic="${topic}"]`);
-            if (activeTabButton) {
-                activeTabButton.classList.add('active');
-            }
-        
-            state.activeTab = topic;
-            state.filteredQuestions = quizData.filter(q => q.topic === topic);
-            shuffleArray(state.filteredQuestions);
-            shuffleChoicesInQuestions(state.filteredQuestions); // Shuffle choices while preserving correct answer
-        
-            state.currentQuestionIndex = 0;
-            state.score = 0;
-            state.answerLocked = false;
-            nextButton.disabled = true; // Disable next button on tab switch
-        
-            renderQuestion();
-            updateScoreDisplay();
-            updateProgressBar();
-        }
-
-
-        function shuffleChoicesInQuestions(questions) {
-            questions.forEach(q => {
-                if (q.type !== 'tf') { // Don't shuffle True/False
-                    const correctAnswerText = q.options[q.correctAnswer];
-                    shuffleArray(q.options);
-                    q.correctAnswer = q.options.indexOf(correctAnswerText); // Update index
-                }
-            });
-        }
-
-
-        /**
-         * Renders the current question and its options to the DOM.
-         */
-        function renderQuestion() {
-            resetQuestionState(); // Reset UI state for new question
-
-            if (state.currentQuestionIndex >= state.filteredQuestions.length) {
-                // End of quiz for this topic
-                questionText.textContent = 'Quiz Completed!';
-                optionsContainer.innerHTML = `<p>You scored ${state.score} out of ${state.filteredQuestions.length} questions in this topic.</p>`;
-                nextButton.textContent = 'Restart Quiz';
-                nextButton.disabled = false; // Enable for restart
-                explanationContainer.classList.remove('show');
+        function showQuestion() {
+            if (currentQuestion >= quizData.length) {
+                showResults();
                 return;
             }
 
-            const currentQuestion = state.filteredQuestions[state.currentQuestionIndex];
-            questionText.textContent = currentQuestion.question;
-            optionsContainer.innerHTML = ''; // Clear previous options
-
-            // For True/False questions, the options are always 'True' and 'False'
-            if (currentQuestion.type === 'tf') {
-                const trueFalseOptions = ['True', 'False'];
-                trueFalseOptions.forEach((option, index) => {
-                    const button = document.createElement('button');
-                    button.classList.add('option-button');
-                    button.textContent = option;
-                    button.dataset.index = index; // Store index for later comparison
-                    button.addEventListener('click', () => handleAnswerClick(index));
-                    optionsContainer.appendChild(button);
-                });
-            } else { // For MCQ questions, use the options from quizData
-                currentQuestion.options.forEach((option, index) => {
-                    const button = document.createElement('button');
-                    button.classList.add('option-button');
-                    button.textContent = option;
-                    button.dataset.index = index; // Store index for later comparison
-                    button.addEventListener('click', () => handleAnswerClick(index));
-                    optionsContainer.appendChild(button);
-                });
-            }
-
-
-            updateScoreDisplay();
-            updateProgressBar();
-            nextButton.textContent = 'Next Question'; // Reset button text
-            nextButton.disabled = true; // Disable until answer is selected
+            answered = false;
+            const question = quizData[currentQuestion];
+            
+            document.getElementById('question-text').textContent = question.question;
+            document.getElementById('explanation-container').classList.add('hidden');
+            
+            const optionsContainer = document.getElementById('options-container');
+            optionsContainer.innerHTML = '';
+            
+            question.options.forEach((option, index) => {
+                const button = document.createElement('button');
+                button.className = 'glass-button w-full p-4 rounded-xl text-left text-primary-navy font-medium hover:text-white transition-all duration-300 transform hover:scale-105';
+                button.textContent = `${String.fromCharCode(65 + index)}. ${option}`;
+                button.onclick = () => selectAnswer(index);
+                optionsContainer.appendChild(button);
+            });
         }
 
-        /**
-         * Handles the user's answer click.
-         * Checks if the answer is correct, highlights options, shows explanation, and locks the question.
-         * @param {number} selectedIndex The index of the option button clicked by the user.
-         */
-        function handleAnswerClick(selectedIndex) {
-            if (state.answerLocked) {
-                return; // Do nothing if answer is already locked
-            }
-
-            state.answerLocked = true; // Lock the question
-            nextButton.disabled = false; // Enable next button
-
-            const currentQuestion = state.filteredQuestions[state.currentQuestionIndex];
-            const optionButtons = optionsContainer.querySelectorAll('.option-button');
-
-            // Highlight correct and incorrect answers
-            optionButtons.forEach((button, index) => {
-                button.disabled = true; // Disable all options after selection
-                if (index === currentQuestion.correctAnswer) {
-                    button.classList.add('correct');
-                } else if (index === selectedIndex) {
-                    button.classList.add('incorrect');
+        function selectAnswer(selectedIndex) {
+            if (answered) return;
+            
+            answered = true;
+            const question = quizData[currentQuestion];
+            const buttons = document.querySelectorAll('#options-container button');
+            
+            buttons.forEach((button, index) => {
+                button.style.pointerEvents = 'none';
+                if (index === question.correct) {
+                    button.classList.add('correct-answer');
+                } else if (index === selectedIndex && index !== question.correct) {
+                    button.classList.add('wrong-answer');
                 }
             });
-
-            // Update score if correct
-            if (selectedIndex === currentQuestion.correctAnswer) {
-                state.score++;
-                updateScoreDisplay();
+            
+            if (selectedIndex === question.correct) {
+                score++;
+                updateScore();
             }
-
-            // Show explanation
-            explanationText.textContent = currentQuestion.explanation;
-            explanationContainer.classList.add('show');
-
-            // Optional: Auto-advance after a short delay
-            // setTimeout(() => {
-            //     handleNextClick();
-            // }, 2000); // 2 second delay
+            
+            setTimeout(() => {
+                document.getElementById('explanation-text').textContent = question.explanation;
+                document.getElementById('explanation-container').classList.remove('hidden');
+            }, 1000);
         }
 
-        /**
-         * Advances to the next question or restarts the quiz if completed.
-         */
-        function handleNextClick() {
-            if (state.currentQuestionIndex >= state.filteredQuestions.length) {
-                // If quiz is completed, restart current topic
-                switchTab(state.activeTab); // This will reset and render first question
-                return;
-            }
-
-            state.currentQuestionIndex++;
-            state.answerLocked = false; // Unlock for the next question
-            renderQuestion();
-        }
-
-        /**
-         * Updates the score and current question count displayed in the header.
-         */
-        function updateScoreDisplay() {
-            scoreDisplay.textContent = state.score;
-            currentQNumDisplay.textContent = Math.min(state.currentQuestionIndex + 1, state.filteredQuestions.length);
-            totalQNumDisplay.textContent = state.filteredQuestions.length;
-
-            if (state.filteredQuestions.length === 0) { // Handle case where no questions are filtered
-                currentQNumDisplay.textContent = 0;
-                totalQNumDisplay.textContent = 0;
+        function nextQuestion() {
+            currentQuestion++;
+            updateProgress();
+            
+            if (currentQuestion >= quizData.length) {
+                showResults();
+            } else {
+                showQuestion();
             }
         }
 
-        /**
-         * Updates the width of the progress bar based on quiz completion.
-         */
-        function updateProgressBar() {
-            const totalQuestions = state.filteredQuestions.length;
-            if (totalQuestions === 0) {
-                progressBar.style.width = '0%';
-                return;
+        function updateProgress() {
+            const progress = (currentQuestion / quizData.length) * 100;
+            document.getElementById('progress-bar').style.width = `${progress}%`;
+            document.getElementById('progress-text').textContent = `${currentQuestion} / ${quizData.length}`;
+        }
+
+        function updateScore() {
+            document.getElementById('score-display').textContent = score;
+        }
+
+        function showResults() {
+            document.getElementById('quiz-container').classList.add('hidden');
+            document.getElementById('results-container').classList.remove('hidden');
+            
+            const percentage = Math.round((score / quizData.length) * 100);
+            document.getElementById('final-score').textContent = `${score}/${quizData.length} (${percentage}%)`;
+            
+            let message = '';
+            if (percentage >= 90) {
+                message = 'Outstanding! You\'re a quiz master! 🏆';
+            } else if (percentage >= 70) {
+                message = 'Great job! You did really well! 🌟';
+            } else if (percentage >= 50) {
+                message = 'Good effort! Keep learning! 📚';
+            } else {
+                message = 'Don\'t give up! Practice makes perfect! 💪';
             }
-            const progress = (state.currentQuestionIndex / totalQuestions) * 100;
-            progressBar.style.width = `${progress}%`;
+            
+            document.getElementById('final-message').textContent = message;
         }
 
-        /**
-         * Resets the UI state of the question area for a new question.
-         * Hides explanation, clears highlighting, enables options.
-         */
-        function resetQuestionState() {
-            optionsContainer.innerHTML = ''; // Clear options
-            explanationContainer.classList.remove('show'); // Hide explanation
-            explanationText.textContent = ''; // Clear explanation text
-
-            // Ensure next button is disabled until an answer is picked
-            nextButton.disabled = true;
+        function restartQuiz() {
+            initializeQuiz();
         }
 
-        function shuffleArray(array) {
-            for (let i = array.length - 1; i > 0; i--) {
-                const j = Math.floor(Math.random() * (i + 1));
-                [array[i], array[j]] = [array[j], array[i]];
-            }
-        }
-
-
-        // Initialize the app when the DOM is fully loaded
-        document.addEventListener('DOMContentLoaded', initializeApp);
+        // Initialize quiz when page loads
+        window.onload = initializeQuiz;
     </script>
 </body>
 </html>
